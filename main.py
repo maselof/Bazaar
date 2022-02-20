@@ -1,8 +1,9 @@
 import pygame
 import sys
+
+import control
 from hero import Hero
 import map
-import control
 
 
 def run():
@@ -21,4 +22,4 @@ def run():
 
 
 run()
-# добавить объектов на первую локацию
+# добавить объектов на первую локацию!!!

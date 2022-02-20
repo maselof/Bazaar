@@ -1,9 +1,8 @@
 import pygame
 import sys
-
-import сontrol
 from hero import Hero
 import map
+import control
 
 
 def run():
@@ -14,8 +13,8 @@ def run():
     clock = pygame.time.Clock()
     while True:
         clock.tick(60)
-        Map.location_1(screen)
-        Control.event(hero)
+        map.location_1(screen)
+        control.event(hero)
         hero.update_hero(screen)
         hero.output()
         pygame.display.update()

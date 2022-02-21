@@ -21,13 +21,28 @@ class Button:
                 action()
         else:
             pygame.draw.rect(self.screen, self.inactive_color, (x, y, self.w, self.h))
-        self.print_text(message=message, x=x + 10, y=y + 10, font_size=font_size)
+        print_text(self.screen, message=message, x=x + 10, y=y + 10, font_size=font_size)
 
-    def print_text(self, message, x, y, font_color=(0, 0, 0), font_type="res/font/a_Alterna.ttf", font_size=30):
 
-        font_type = pygame.font.Font(font_type, font_size)
-        text = font_type.render(message, True, font_color)
-        self.screen.blit(text, (x, y))
+def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/font/a_Alterna.ttf", font_size=30):
+
+    font_type = pygame.font.Font(font_type, font_size)
+    text = font_type.render(message, True, font_color)
+    screen.blit(text, (x, y))
+
+
+def pause(screen):
+    paused = True
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        print_text(screen, "Press ENTER to continue", 160, 200)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RETURN]:
+            paused = False
+        pygame.display.update()
 
 
 def show_menu():

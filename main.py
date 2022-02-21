@@ -1,4 +1,3 @@
-from logic.game_cycle import *
+from interfaces import interface
 
-
-run()
+interface.show_menu()

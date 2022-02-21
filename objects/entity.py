@@ -1,8 +1,8 @@
-from GameForMIREA.objects.game_object import *
+from objects.game_object import *
 from enum import Enum
 from typing import List
-from GameForMIREA.logic import game_logic
-from GameForMIREA.objects.vector2 import *
+from logic import game_logic
+from objects.vector2 import *
 
 
 class Direction(Enum):

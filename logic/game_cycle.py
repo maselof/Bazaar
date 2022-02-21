@@ -1,8 +1,9 @@
 import sys
 
 import pygame
-from GameForMIREA.objects.hero import *
-from GameForMIREA.objects.map import *
+
+from objects.hero import *
+from objects.map import *
 
 
 def draw(object: GameObject, screen: pygame.surface.Surface):

@@ -1,6 +1,6 @@
 import pygame.image
 
-from GameForMIREA.objects.entity import *
+from objects.entity import *
 
 
 class Hero(Entity):

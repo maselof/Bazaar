@@ -1,4 +1,4 @@
-from GameForMIREA.objects.point import *
+from objects.point import *
 import pygame
 
 

@@ -1,4 +1,4 @@
-from GameForMIREA1.objects.point import *
+from GameForMIREA.objects.point import *
 
 
 class Vector2(Point):

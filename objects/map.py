@@ -1,4 +1,4 @@
-from GameForMIREA1.objects.game_object import *
+from GameForMIREA.objects.game_object import *
 
 
 class Map(GameObject):

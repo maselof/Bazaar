@@ -2,7 +2,6 @@ from game_object import *
 from enum import Enum
 from typing import List
 import game_logic
-from animation import *
 
 
 class Direction(Enum):
@@ -17,18 +16,15 @@ class Entity(GameObject):
     speed: int
     direction: Direction
     direction_vector: Vector2
-    animations: [Animation]
     current_animation_index: int
 
     def __init__(self,
                  speed: int = 1,
                  direction: Direction = Direction.LEFT,
-                 animations: [Animation] = [],
                  ):
         super().__init__()
         self.speed = speed
         self.set_direction(direction)
-        self.animations = animations
         self.current_animation_index = 0
 
     def get_direction(self) -> Direction:

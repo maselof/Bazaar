@@ -7,7 +7,6 @@ from entity import Direction
 from game_object import *
 from hero import *
 from map import *
-from action import *
 import interface
 
 

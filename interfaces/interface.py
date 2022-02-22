@@ -24,7 +24,7 @@ class Button:
         print_text(self.screen, message=message, x=x + 10, y=y + 10, font_size=font_size)
 
 
-def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/font/a_Alterna.ttf", font_size=30):
+def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/fonts/a_Alterna.ttf", font_size=30):
 
     font_type = pygame.font.Font(font_type, font_size)
     text = font_type.render(message, True, font_color)
@@ -50,7 +50,7 @@ def show_menu():
     pygame.font.init()
     pygame.display.set_caption("Игра")
     screen = pygame.display.set_mode((1680, 1050))
-    menu_bg = pygame.image.load("res/image/bg.png")
+    menu_bg = pygame.image.load("res/images/bg.png")
     show = True
     start_button = Button(540, 100, screen)
     quit_button = Button(540, 100, screen)

@@ -1,5 +1,5 @@
 import pygame
-from logic import game_cycle
+import game_cycle
 
 
 class Button:

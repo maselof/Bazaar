@@ -2,9 +2,13 @@ import sys
 
 import pygame
 
-from objects.hero import *
-from objects.map import *
-from interfaces import interface
+import game_logic
+from entity import Direction
+from game_object import *
+from hero import *
+from map import *
+from action import *
+import interface
 
 
 def draw(object: GameObject, screen: pygame.surface.Surface):
@@ -16,9 +20,12 @@ def event(screen, hero: Hero):
         if (event.type == pygame.QUIT):
             sys.exit()
 
-        elif (event.type == pygame.KEYDOWN):
+        if (event.type == pygame.KEYUP):
+            hero.set_direction(Direction.STAND)
+
+        if (event.type == pygame.KEYDOWN):
             if (event.key == pygame.K_a):
-                hero.set_direction(Direction.LEFT)
+                move_left(hero)
             if (event.key == pygame.K_w):
                 hero.set_direction(Direction.UP)
             if (event.key == pygame.K_d):
@@ -36,12 +43,12 @@ def run():
     clock = pygame.time.Clock()
 
     hero = Hero()
-    hero.set_position(Point(100, 100))
+    hero.set_position(Vector2(100, 100))
     map = Map()
 
     while True:
-        clock.tick(60)
-        game_logic.g_timer = (game_logic.g_timer + 1) % 60
+        clock.tick(game_logic.g_fps)
+        game_logic.g_timer = (game_logic.g_timer + 1) % game_logic.g_fps
         hero.update()
         event(screen, hero)
         draw(map, screen)

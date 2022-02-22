@@ -1,6 +1,6 @@
 import pygame.image
 
-from objects.entity import *
+from entity import *
 
 
 class Hero(Entity):

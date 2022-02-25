@@ -7,16 +7,15 @@ from action import *
 
 
 class Direction(Enum):
-    LEFT = 0
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
-    STAND = 5
+    LEFT = -1
+    UP = -1
+    RIGHT = 1
+    DOWN = 1
+    STAND = 0
 
 
 class Entity(GameObject):
     speed: int
-    direction: Direction
     direction_vector: Vector2
     actions: {Action}
     current_action: Action
@@ -25,13 +24,11 @@ class Entity(GameObject):
     def __init__(self,
                  name: str,
                  speed: int = 10,
-                 direction: Direction = Direction.STAND,
                  ):
         super().__init__(name)
 
         self.speed = speed
         self.direction_vector = Vector2(0, 0)
-        self.set_direction(direction)
         self.left_flip = False
 
         animations_path = 'res/animations/' + self.name + '/'
@@ -44,30 +41,19 @@ class Entity(GameObject):
         self.current_action.set_args(args)
 
     def action_idle(self, args: [object]):
-        self.set_direction(Direction.STAND)
+        self.set_direction([Direction.STAND, Direction.STAND])
 
     def action_walking(self, args: [object]):
         self.set_direction(args[0])
         new_pos = self.get_position() + self.get_direction_vector() * self.speed
         self.set_position(new_pos)
 
-    def get_direction(self) -> Direction:
-        return self.direction
-
-    def set_direction(self, direction: Direction):
-        self.direction = direction
-        if self.direction == Direction.LEFT:
-            self.direction_vector.x = -1
+    def set_direction(self, directions: [Direction]):
+        self.direction_vector = Vector2(directions[0].value, directions[1].value)
+        if directions[0] == Direction.LEFT:
             self.left_flip = True
-        elif self.direction == Direction.UP:
-            self.direction_vector.y = -1
-        elif self.direction == Direction.RIGHT:
-            self.direction_vector.x = 1
+        elif directions[0] == Direction.RIGHT:
             self.left_flip = False
-        elif self.direction == Direction.DOWN:
-            self.direction_vector.y = 1
-        elif self.direction == Direction.STAND:
-            self.direction_vector = Vector2(0, 0)
 
     def get_direction_vector(self) -> Vector2:
         return self.direction_vector

@@ -14,25 +14,37 @@ def draw(object: GameObject, screen: pygame.surface.Surface):
     screen.blit(object.image, object.rect)
 
 
+def handle_movement(hero):
+
+    directions = [Direction.STAND, Direction.STAND]
+    pressed_keys = pygame.key.get_pressed()
+    if pressed_keys[pygame.K_a]:
+        directions[0] = Direction.LEFT
+    elif pressed_keys[pygame.K_d]:
+        directions[0] = Direction.RIGHT
+
+    if pressed_keys[pygame.K_w]:
+        directions[1] = Direction.UP
+    elif pressed_keys[pygame.K_s]:
+        directions[1] = Direction.DOWN
+
+    if directions == [Direction.STAND, Direction.STAND]:
+        hero.set_action('idle', None)
+    else:
+        hero.set_action('walking', directions)
+
+
 def event(screen, hero: Hero):
+
+    handle_movement(hero)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                hero.set_action('walking', Direction.LEFT)
-            if event.key == pygame.K_w:
-                hero.set_action('walking', Direction.UP)
-            if event.key == pygame.K_d:
-                hero.set_action('walking', Direction.RIGHT)
-            if event.key == pygame.K_s:
-                hero.set_action('walking', Direction.DOWN)
             if event.key == pygame.K_ESCAPE:
                 interface.pause(screen)
-
-        elif event.type == pygame.KEYUP:
-            hero.set_action('idle', None)
 
 
 def run():

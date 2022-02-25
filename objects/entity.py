@@ -17,30 +17,27 @@ class Direction(Enum):
 class Entity(GameObject):
     speed: int
     direction_vector: Vector2
-    actions: {Action}
-    current_action: Action
     left_flip: bool
 
     def __init__(self,
                  name: str,
-                 speed: int = 10,
+                 animations_path: str = '',
+                 scaling: float = 1
                  ):
-        super().__init__(name)
+        super().__init__(name, animations_path, scaling)
 
-        self.speed = speed
+        self.speed = 5
         self.direction_vector = Vector2(0, 0)
         self.left_flip = False
 
-        animations_path = 'res/animations/' + self.name + '/'
-        self.actions = {'idle': Action(self.action_idle, Animation(animations_path + 'Idle', 0.8)),
-                        'walking': Action(self.action_walking, Animation(animations_path + 'Walking'))}
+    def animations_init(self):
+        path = 'res/animations/entities/' + self.animations_path + self.name + '/'
+        self.actions = {'idle': Action(self.action_idle, Animation(path + 'Idle')),
+                        'walking': Action(self.action_walking, Animation(path + 'Walking'))}
         self.current_action = self.actions['idle']
 
-    def set_action(self, key: str, args: [object]):
-        self.current_action = self.actions.get(key)
-        self.current_action.set_args(args)
-
     def action_idle(self, args: [object]):
+        super().action_idle(args)
         self.set_direction([Direction.STAND, Direction.STAND])
 
     def action_walking(self, args: [object]):
@@ -59,15 +56,9 @@ class Entity(GameObject):
         return self.direction_vector
 
     def update(self):
-        if self.current_action.animation.finished:
-            self.current_action.animation.start()
-        self.current_action.animation.update()
-
-        self.image = self.current_action.animation.get_current_frame()
+        super().update()
         if self.left_flip:
             self.image = pygame.transform.flip(self.image, True, False)
-
-        self.current_action.do()
 
 
 

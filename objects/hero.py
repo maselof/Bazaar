@@ -4,10 +4,8 @@ from entity import *
 
 
 class Hero(Entity):
-    def __init__(self):
-        super().__init__('hero')
-        # self.animations = [pygame.image.load('res/images/1.png'), pygame.image.load('res/images/2.png'),
-        #                    pygame.image.load('res/images/1.png'), pygame.image.load('res/images/2.png'),
-        #                    pygame.image.load('res/images/1.png'), pygame.image.load('res/images/2.png'),
-        #                    pygame.image.load('res/images/1.png'), pygame.image.load('res/images/2.png')]
+    def __init__(self,
+                 scaling: float = 1):
+        super().__init__('hero', '', scaling)
+
 

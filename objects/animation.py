@@ -12,9 +12,11 @@ class Animation:
 
     def __init__(self,
                  path: str,
-                 speed: float = 1):
+                 speed: float = 1,
+                 scale: float = 1):
         self.path = path
         self.speed = speed
+        self.scale = scale
         self.frame = 0
         self.finished = True
 

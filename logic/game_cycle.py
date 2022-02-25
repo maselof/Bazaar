@@ -53,15 +53,21 @@ def run():
     screen = pygame.display.set_mode((1680, 1080))
     clock = pygame.time.Clock()
 
-    hero = Hero()
+    hero = Hero(0.5)
     hero.set_position(Vector2(100, 100))
+
+    potion = GameObject('heal_potion', 'potions/', 1)
+    potion.set_position(Vector2(100, 100))
+
     map = Map()
 
     while True:
         clock.tick(game_logic.g_fps)
         game_logic.g_timer = (game_logic.g_timer + 1) % game_logic.g_fps
         hero.update()
+        potion.update()
         event(screen, hero)
         draw(map, screen)
         draw(hero, screen)
+        draw(potion, screen)
         pygame.display.update()

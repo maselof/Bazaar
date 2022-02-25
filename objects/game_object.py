@@ -9,11 +9,11 @@ class GameObject:
     rect: pygame.rect.Rect
 
     def __init__(self,
-                 position: Vector2 = Vector2(0, 0),
                  name: str = '',
+                 position: Vector2 = Vector2(0, 0),
                  image: pygame.Surface = pygame.Surface([0, 0])):
-        self._position = position
         self.name = name
+        self._position = position
         self.image = image
         self.rect = self.image.get_rect()
 

@@ -2,6 +2,8 @@ from game_object import *
 from enum import Enum
 from typing import List
 import game_logic
+from animation import *
+from action import *
 
 
 class Direction(Enum):
@@ -16,16 +18,38 @@ class Entity(GameObject):
     speed: int
     direction: Direction
     direction_vector: Vector2
-    current_animation_index: int
+    actions: {Action}
+    current_action: Action
+    left_flip: bool
 
     def __init__(self,
-                 speed: int = 1,
-                 direction: Direction = Direction.LEFT,
+                 name: str,
+                 speed: int = 10,
+                 direction: Direction = Direction.STAND,
                  ):
-        super().__init__()
+        super().__init__(name)
+
         self.speed = speed
+        self.direction_vector = Vector2(0, 0)
         self.set_direction(direction)
-        self.current_animation_index = 0
+        self.left_flip = False
+
+        animations_path = 'res/animations/' + self.name + '/'
+        self.actions = {'idle': Action(self.action_idle, Animation(animations_path + 'Idle', 0.8)),
+                        'walking': Action(self.action_walking, Animation(animations_path + 'Walking'))}
+        self.current_action = self.actions['idle']
+
+    def set_action(self, key: str, args: [object]):
+        self.current_action = self.actions.get(key)
+        self.current_action.set_args(args)
+
+    def action_idle(self, args: [object]):
+        self.set_direction(Direction.STAND)
+
+    def action_walking(self, args: [object]):
+        self.set_direction(args[0])
+        new_pos = self.get_position() + self.get_direction_vector() * self.speed
+        self.set_position(new_pos)
 
     def get_direction(self) -> Direction:
         return self.direction
@@ -33,13 +57,15 @@ class Entity(GameObject):
     def set_direction(self, direction: Direction):
         self.direction = direction
         if self.direction == Direction.LEFT:
-            self.direction_vector = Vector2(-1, 0)
+            self.direction_vector.x = -1
+            self.left_flip = True
         elif self.direction == Direction.UP:
-            self.direction_vector = Vector2(0, -1)
+            self.direction_vector.y = -1
         elif self.direction == Direction.RIGHT:
-            self.direction_vector = Vector2(1, 0)
+            self.direction_vector.x = 1
+            self.left_flip = False
         elif self.direction == Direction.DOWN:
-            self.direction_vector = Vector2(0, 1)
+            self.direction_vector.y = 1
         elif self.direction == Direction.STAND:
             self.direction_vector = Vector2(0, 0)
 
@@ -47,11 +73,19 @@ class Entity(GameObject):
         return self.direction_vector
 
     def update(self):
-        if self.direction != Direction.STAND:
-            self.image = self.animations[self.direction.value * game_logic.g_frames_count +
-                                         game_logic.g_timer * game_logic.g_frames_count // (60)]
-        new_pos = self.get_position() + self.get_direction_vector() * self.speed
-        self.set_position(new_pos)
+        if self.current_action.animation.finished:
+            self.current_action.animation.start()
+        self.current_action.animation.update()
+
+        self.image = self.current_action.animation.get_current_frame()
+        if self.left_flip:
+            self.image = pygame.transform.flip(self.image, True, False)
+
+        self.current_action.do()
+
+
+
+
 
 
 

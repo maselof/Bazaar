@@ -16,23 +16,23 @@ def draw(object: GameObject, screen: pygame.surface.Surface):
 
 def event(screen, hero: Hero):
     for event in pygame.event.get():
-        if (event.type == pygame.QUIT):
+        if event.type == pygame.QUIT:
             sys.exit()
 
-        if (event.type == pygame.KEYUP):
-            hero.set_direction(Direction.STAND)
-
-        if (event.type == pygame.KEYDOWN):
-            if (event.key == pygame.K_a):
-                move_left(hero)
-            if (event.key == pygame.K_w):
-                hero.set_direction(Direction.UP)
-            if (event.key == pygame.K_d):
-                hero.set_direction(Direction.RIGHT)
-            if (event.key == pygame.K_s):
-                hero.set_direction(Direction.DOWN)
-            if (event.key == pygame.K_ESCAPE):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                hero.set_action('walking', Direction.LEFT)
+            if event.key == pygame.K_w:
+                hero.set_action('walking', Direction.UP)
+            if event.key == pygame.K_d:
+                hero.set_action('walking', Direction.RIGHT)
+            if event.key == pygame.K_s:
+                hero.set_action('walking', Direction.DOWN)
+            if event.key == pygame.K_ESCAPE:
                 interface.pause(screen)
+
+        elif event.type == pygame.KEYUP:
+            hero.set_action('idle', None)
 
 
 def run():

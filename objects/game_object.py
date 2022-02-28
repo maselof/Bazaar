@@ -1,10 +1,8 @@
 import pygame
-from pygame import Vector2
 from action import *
 
 
 class GameObject:
-    _position: Vector2
     animations_path: str
     name: str
     scaling: float
@@ -17,7 +15,7 @@ class GameObject:
                  name: str = '',
                  animations_path: str = '',
                  scaling: float = 1,
-                 position: Vector2 = Vector2(0, 0),
+                 position: pygame.Vector2 = pygame.Vector2(0, 0),
                  ):
         self.animations_path = animations_path
         self.name = name
@@ -32,16 +30,16 @@ class GameObject:
         self.actions = {'idle': Action(self.action_idle, Animation(path + 'Idle'))}
         self.current_action = self.actions['idle']
 
-    def set_position(self, point: Vector2):
+    def set_position(self, point: pygame.Vector2):
         self.rect.x, self.rect.y = point
-        self._position = point
 
-    def get_position(self) -> Vector2:
-        return self._position
+    def get_position(self) -> pygame.Vector2:
+        return pygame.Vector2(self.rect.x, self.rect.y)
 
     def set_action(self, key: str, args: [object]):
-        self.current_action = self.actions.get(key)
-        self.current_action.set_args(args)
+        if self.current_action.animation.finished | self.current_action.animation.interruptible:
+            self.current_action = self.actions.get(key)
+            self.current_action.set_args(args)
 
     def action_idle(self, args: [object]):
         pass

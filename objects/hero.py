@@ -1,5 +1,3 @@
-import pygame.image
-
 from entity import *
 
 

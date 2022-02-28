@@ -1,9 +1,7 @@
 from game_object import *
 from enum import Enum
-from typing import List
-import game_logic
-from animation import *
 from action import *
+from pygame.math import Vector2
 
 
 class Direction(Enum):
@@ -19,6 +17,9 @@ class Entity(GameObject):
     direction_vector: Vector2
     left_flip: bool
 
+    max_hp: int
+    hp: int
+
     def __init__(self,
                  name: str,
                  animations_path: str = '',
@@ -30,10 +31,14 @@ class Entity(GameObject):
         self.direction_vector = Vector2(0, 0)
         self.left_flip = False
 
+        self.max_hp = 100
+        self.hp = 100
+
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
         self.actions = {'idle': Action(self.action_idle, Animation(path + 'Idle')),
-                        'walking': Action(self.action_walking, Animation(path + 'Walking'))}
+                        'walking': Action(self.action_walking, Animation(path + 'Walking')),
+                        'attacking': Action(self.action_attacking, Animation(path + 'Attacking', False))}
         self.current_action = self.actions['idle']
 
     def action_idle(self, args: [object]):
@@ -44,6 +49,9 @@ class Entity(GameObject):
         self.set_direction(args[0])
         new_pos = self.get_position() + self.get_direction_vector() * self.speed
         self.set_position(new_pos)
+
+    def action_attacking(self, args: [object]):
+        pass
 
     def set_direction(self, directions: [Direction]):
         self.direction_vector = Vector2(directions[0].value, directions[1].value)

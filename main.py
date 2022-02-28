@@ -1,5 +1,5 @@
 import pygame
+import game_cycle
 
-from interfaces import interface
 
-interface.show_menu()
+game_cycle.show_menu()

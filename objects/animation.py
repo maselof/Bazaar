@@ -9,12 +9,15 @@ class Animation:
     frame: float
     frames_count: int
     finished: bool
+    interruptible: bool
 
     def __init__(self,
                  path: str,
+                 interruptible: bool = True,
                  speed: float = 1,
                  scale: float = 1):
         self.path = path
+        self.interruptible = interruptible
         self.speed = speed
         self.scale = scale
         self.frame = 0

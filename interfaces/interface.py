@@ -1,5 +1,41 @@
 import pygame
-import game_cycle
+from entity import Entity
+from image_wrapper import ImageWrapper
+
+
+class HealthBar:
+    __frame: ImageWrapper
+    __band: ImageWrapper
+    __offset: int
+    __initial_band_size: int
+    entity: Entity
+
+    def __init__(self,
+                 entity: Entity):
+        self.entity = entity
+        self.__offset = -10
+        self.__frame = ImageWrapper('res/images/interface/health_bar/frame.png')
+        self.__band = ImageWrapper('res/images/interface/health_bar/band.png')
+        self.__frame.scale(0.7, 0.5)
+        self.__band.scale(0.7, 0.5)
+        self.__initial_band_size = int(self.__band.get_size().x)
+
+    def center_x(self) -> int:
+        bar_size = self.__frame.image.get_size()[0]
+        entity_center = self.entity.get_position().x + self.entity.image.get_size()[0] // 2
+        return entity_center - bar_size // 2
+
+    def update(self):
+        pos = pygame.Vector2(self.center_x(), self.entity.get_position().y + self.__offset)
+        self.__frame.set_position(pos)
+        self.__band.set_position(pos)
+
+        percent = max(self.entity.hp / self.entity.max_hp, 0)
+        self.__band.set_size(pygame.Vector2(self.__initial_band_size * percent, self.__band.get_size().y))
+
+    def draw(self, screen: pygame.Surface):
+        screen.blit(self.__frame.image, self.__frame.rect)
+        screen.blit(self.__band.image, self.__band.rect)
 
 
 class Button:
@@ -42,26 +78,6 @@ def pause(screen):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
             paused = False
-        pygame.display.update()
-
-
-def show_menu():
-    pygame.init()
-    pygame.font.init()
-    pygame.display.set_caption("Игра")
-    screen = pygame.display.set_mode((1680, 1050))
-    menu_bg = pygame.image.load("res/images/bg.png")
-    show = True
-    start_button = Button(540, 100, screen)
-    quit_button = Button(540, 100, screen)
-    while show:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-        screen.blit(menu_bg, (0, 0))
-        start_button.draw(300, 200, "Start Game", game_cycle.run, 70)
-        quit_button.draw(300, 400, "Quit", pygame.quit, 70)
         pygame.display.update()
 
 

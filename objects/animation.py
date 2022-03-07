@@ -1,48 +1,64 @@
 import pygame
 import os
+from typing import Dict
+from direction import Direction
 
 
 class Animation:
     path: str
-    images: [pygame.Surface]
+    name: str
+    images: {}
     speed: float
     frame: float
-    frames_count: int
     finished: bool
     interruptible: bool
+    directional: bool
 
     def __init__(self,
                  path: str,
+                 name: str,
+                 directional: bool = True,
                  interruptible: bool = True,
                  speed: float = 1,
                  scale: float = 1):
-        self.path = path
+        self.path = path + name
+        self.name = name
         self.interruptible = interruptible
+        self.directional = directional
         self.speed = speed
         self.scale = scale
         self.frame = 0
         self.finished = True
 
-        self.__load_images()
-        self.frames_count = len(self.images)
+        self.__prepare_images()
 
-    def __load_images(self):
+    def __prepare_images(self):
+        if self.directional:
+            self.images = {Direction.LEFT: self.__load_images('left/'),
+                           Direction.RIGHT: self.__load_images('right/'),
+                           Direction.UP: self.__load_images('up/'),
+                           Direction.DOWN: self.__load_images('down/')}
+        else:
+            self.images = {Direction.STAND: self.__load_images('')}
+
+    def __load_images(self, dir: str):
         images = []
-        for _, __, img_files in os.walk(self.path):
+        dir_path = self.path + '/' + dir
+        for _, __, img_files in os.walk(dir_path):
             for img in img_files:
-                full_path = self.path + '/' + img
+                full_path = dir_path + img
                 images.append(pygame.image.load(full_path))
-        self.images = images
+        return images
 
     def start(self):
         self.frame = 0
         self.finished = False
 
-    def get_current_frame(self):
-        return self.images[int(self.frame)]
-
-    def update(self):
-        self.frame += self.speed
-        if self.frame >= self.frames_count:
+    def get_current_frame(self, direction: Direction):
+        if int(self.frame) >= len(self.images.get(direction)):
             self.frame = 0
             self.finished = True
+        return self.images.get(direction)[int(self.frame)]
+
+    def update(self, direction: Direction):
+        self.frame += self.speed

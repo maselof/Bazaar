@@ -3,6 +3,7 @@ from game_object import *
 from action import *
 from pygame.math import Vector2
 from weapon import Weapon
+import game_cycle
 
 
 class Entity(GameObject):
@@ -14,6 +15,10 @@ class Entity(GameObject):
     hp: int
 
     weapon: Weapon
+
+    # delete
+    attack_rects: [pygame.Rect]
+    c_attack_rects: int
 
     def __init__(self,
                  name: str,
@@ -32,6 +37,10 @@ class Entity(GameObject):
         self.hp = 100
 
         self.weapon = Weapon('fists', Vector2(0, 0))
+
+        # delete
+        self.attack_rects = []
+        self.c_attack_rects = 5
 
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
@@ -58,8 +67,36 @@ class Entity(GameObject):
         new_pos = self.get_position() + self.direction_vector * self.speed
         self.set_position(new_pos)
 
+    def build_attack_rects(self):
+        self.attack_rects.clear()
+        height = self.weapon.attack_range // self.c_attack_rects
+        for i in range(self.c_attack_rects):
+            width = height * (i + 1) * 2
+            if is_horizontal(self.direction):
+                w = height
+                h = width
+                pos_x = self.collision_rect.centerx + self.direction.value.x * w * i
+                pos_y = self.collision_rect.centery - h // 2
+                self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
+            else:
+                w = width
+                h = height
+                pos_x = self.collision_rect.centerx - w // 2
+                pos_y = self.collision_rect.centery + self.direction.value.y * h * i
+                self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
+
     def action_attacking(self, args: [object]):
-        pass
+        if not self.current_action.animation.finished:
+            return
+        collided = game_cycle.get_collided_objects(self.attack_rects)
+        for go in collided:
+            if isinstance(go, Entity):
+                go.get_damage(10)
+
+    def get_damage(self, damage: int):
+        self.hp -= damage
+        print(f'{self.name} gets {damage} damage')
+
 
     def set_weapon(self, weapon: Weapon):
         self.weapon = weapon
@@ -74,7 +111,13 @@ class Entity(GameObject):
         self.weapon.set_action(self.current_action.animation.name, self.current_action.args)
         self.weapon.update()
 
+        self.build_attack_rects()
+
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
         self.weapon.draw(screen)
+
+        # attack area
+        #for r in self.attack_rects:
+        #    pygame.draw.rect(screen, (255, 0, 0), r)
 

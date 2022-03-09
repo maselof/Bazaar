@@ -1,7 +1,7 @@
 import pygame
 import os
 from typing import Dict
-from direction import Direction
+from direction import *
 
 
 class Animation:

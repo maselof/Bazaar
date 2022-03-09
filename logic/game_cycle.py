@@ -4,10 +4,6 @@ import interface
 from camera import *
 
 
-def is_horizontal(direction: Direction):
-    return direction == Direction.LEFT or direction == Direction.RIGHT
-
-
 def remove_all_directions(queue: [Direction], direction: Direction):
     for i in range(queue.count(direction)):
         queue.remove(direction)
@@ -112,13 +108,25 @@ def add_game_object(game_object: GameObject, game_map: Map, game_interface: inte
     game_map.game_objects.append(game_object)
 
 
+game_map = Map()
+
+
+def get_collided_objects(area: [pygame.Rect]) -> [GameObject]:
+    collided = []
+    for go in game_map.game_objects:
+        for r in area:
+            if go.collision_rect.colliderect(r):
+                collided.append(go)
+                break
+    return collided
+
+
 def run():
     pygame.init()
     pygame.display.set_caption("Игра")
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
 
-    game_map = Map()
     game_interface = interface.Interface()
 
     hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height))

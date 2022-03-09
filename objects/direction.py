@@ -9,3 +9,7 @@ class Direction(Enum):
     DOWN = Vector2(0, 1)
     STAND = Vector2(0, 0)
 
+
+def is_horizontal(direction: Direction):
+    return direction == Direction.LEFT or direction == Direction.RIGHT
+

@@ -4,8 +4,9 @@ from game_object import *
 class Weapon(GameObject):
 
     def __init__(self,
-                 name: str):
-        super().__init__(name, 'weapons/', True)
+                 name: str,
+                 size: pygame.Vector2):
+        super().__init__(name, 'weapons/', size, True)
 
     def animations_init(self):
         path = 'res/animations/objects/' + self.animations_path + self.name + '/'

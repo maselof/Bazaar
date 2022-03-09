@@ -1,9 +1,25 @@
 import pygame
 from entity import Entity
 from image_wrapper import ImageWrapper
+from idrawable import *
 
 
-class HealthBar:
+class Interface(IDrawable):
+    elements: [IDrawable]
+
+    def __init__(self):
+        self.elements = []
+
+    def update(self):
+        for el in self.elements:
+            el.update()
+
+    def draw(self, screen: pygame.Surface):
+        for el in self.elements:
+            el.draw(screen)
+
+
+class HealthBar(IDrawable):
     __frame: ImageWrapper
     __band: ImageWrapper
     __offset: int

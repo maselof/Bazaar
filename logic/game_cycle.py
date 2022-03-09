@@ -4,10 +4,6 @@ import interface
 from camera import *
 
 
-def draw(object, screen: pygame.surface.Surface):
-    screen.blit(object.image, object.rect)
-
-
 def is_horizontal(direction: Direction):
     return direction == Direction.LEFT or direction == Direction.RIGHT
 
@@ -107,45 +103,58 @@ def show_menu():
         pygame.display.update()
 
 
+def add_entity(entity: Entity, game_map: Map, game_interface: interface.Interface):
+    game_interface.elements.append(interface.HealthBar(entity))
+    game_map.game_objects.append(entity)
+
+
+def add_game_object(game_object: GameObject, game_map: Map, game_interface: interface.Interface):
+    game_map.game_objects.append(game_object)
+
+
 def run():
     pygame.init()
     pygame.display.set_caption("Игра")
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
 
-    hero = Hero(1)
-    cudgel = Weapon('cudgel')
-    hero.set_weapon(cudgel)
+    game_map = Map()
+    game_interface = interface.Interface()
 
+    hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height))
     hero.update()
     hero_width, hero_height = hero.image.get_size()
     center = Vector2((game_logic.g_screen_width - hero_width) // 2,
                      (game_logic.g_screen_height - hero_height) // 2)
-    print(hero_width, hero_height, center)
     hero.set_position(center)
+    game_interface.elements.append(interface.HealthBar(hero))
+    cudgel = Weapon('cudgel', Vector2(0, 0))
+    # hero.set_weapon(cudgel)
 
-    hb = interface.HealthBar(hero)
-
-    potion = GameObject('heal_potion', 'potions/', False, 1)
+    potion = GameObject('heal_potion', 'potions/', Vector2(0, 0), False, 1)
     potion.set_position(Vector2(100, 100))
+    add_game_object(potion, game_map, game_interface)
 
-    map = Map()
-    map.game_objects.append(potion)
+    entity = Entity('hero', '', Vector2(30, 70))
+    entity.set_position(Vector2(200, 200))
+    cudgel2 = Weapon('cudgel', Vector2(0, 0))
+    entity.set_weapon(cudgel2)
+    add_entity(entity, game_map, game_interface)
 
-    camera = Camera(map, hero)
+    camera = Camera(game_map, hero)
 
     while True:
         clock.tick(game_logic.g_fps)
         game_logic.g_timer = (game_logic.g_timer + 1) % game_logic.g_fps
-        potion.update()
-        hb.update()
+
+        game_map.update()
         hero.update()
-        cudgel.update()
         camera.update()
+        game_interface.update()
+
         event(screen, hero)
-        draw(map, screen)
-        draw(potion, screen)
-        hb.draw(screen)
-        draw(hero, screen)
-        draw(cudgel, screen)
+        game_map.draw(screen)
+        hero.draw(screen)
+        game_interface.draw(screen)
+
         pygame.display.update()

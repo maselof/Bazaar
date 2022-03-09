@@ -10,8 +10,8 @@ g_screen_height = 1000
 # objects sizes
 
 # hero
-g_hero_width = 194
-g_hero_height = 236
+g_hero_width = 30
+g_hero_height = 70
 
 # entities
 g_entity_walking_anim_speed = 0.2

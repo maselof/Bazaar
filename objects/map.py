@@ -1,10 +1,10 @@
-from game_object import *
+from idrawable import *
 
 
-class Map:
+class Map(IDrawable):
     image: pygame.Surface
     rect: pygame.Rect
-    game_objects: [GameObject]
+    game_objects: [IDrawable]
 
     def __init__(self):
         self.image = pygame.image.load('res/images/bg.png')
@@ -14,3 +14,12 @@ class Map:
     def move(self, vector: pygame.Vector2):
         self.rect.x += vector.x
         self.rect.y += vector.y
+
+    def update(self):
+        for go in self.game_objects:
+            go.update()
+
+    def draw(self, screen: pygame.Surface):
+        screen.blit(self.image, self.rect)
+        for go in self.game_objects:
+            go.draw(screen)

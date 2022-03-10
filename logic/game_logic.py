@@ -16,3 +16,5 @@ g_hero_height = 70
 # entities
 g_entity_walking_anim_speed = 0.2
 g_entity_attacking_anim_speed = 0.2
+
+draw_inventory = False

@@ -1,7 +1,8 @@
 import pygame
-from entity import Entity
+from entity import *
 from image_wrapper import ImageWrapper
 from idrawable import *
+import game_logic
 
 
 class Interface(IDrawable):
@@ -67,7 +68,7 @@ class Button:
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
 
-        if x < mouse[0] < self.w and y < mouse[1] < y + self.h:
+        if x < mouse[0] < x + self.w and y < mouse[1] < y + self.h:
             pygame.draw.rect(self.screen, self.active_color, (x, y, self.w, self.h))
             if click[0]:
                 action()
@@ -85,16 +86,22 @@ def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/fonts
 
 def pause(screen):
     paused = True
+    quit_button = Button(540, 100, screen)
     while paused:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        print_text(screen, "Press ENTER to continue", 160, 200)
+        print_text(screen, "Press ENTER to continue", screen.get_size()[0] // 2 - 150, screen.get_size()[1] // 2 - 100)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
             paused = False
+        quit_button.draw(screen.get_size()[0] // 2 - 250, screen.get_size()[1] // 2, "Quit", pygame.quit, 70)
         pygame.display.update()
+
+
+pygame.init()
+
 
 
 

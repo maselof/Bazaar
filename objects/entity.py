@@ -4,13 +4,14 @@ from action import *
 from pygame.math import Vector2
 from weapon import Weapon
 import game_cycle
+from inventory import Inventory
 
 
 class Entity(GameObject):
     speed: int
     direction_vector: Vector2
     left_flip: bool
-
+    inventory: Inventory
     max_hp: int
     hp: int
 

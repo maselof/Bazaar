@@ -1,7 +1,11 @@
 import sys
+
+import pygame
+
 from map import *
 import interface
 from camera import *
+from inventory import Inventory
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -42,6 +46,7 @@ def handle_movement(hero):
 
 def event(screen, hero: Hero):
     handle_movement(hero)
+    inventory = Inventory()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -77,6 +82,11 @@ def event(screen, hero: Hero):
                 hero.set_action('attacking', None)
             if event.key == pygame.K_f:
                 hero.hp -= 10
+            if event.key == pygame.K_TAB:
+               game_logic.draw_inventory = not game_logic.draw_inventory
+            if event.key == pygame.K_1:
+                hero.inventory.increase('potion')
+
 
 
 def show_menu():
@@ -94,8 +104,8 @@ def show_menu():
                 pygame.quit()
                 quit()
         screen.blit(menu_bg, (0, 0))
-        start_button.draw(300, 200, "Start Game", run, 70)
-        quit_button.draw(300, 400, "Quit", pygame.quit, 70)
+        start_button.draw(screen.get_size()[0] // 2 - 250, screen.get_size()[1] // 2 - 150, "Start Game", run, 70)
+        quit_button.draw(screen.get_size()[0] // 2 - 250, screen.get_size()[1] // 2, "Quit", pygame.quit, 70)
         pygame.display.update()
 
 
@@ -137,12 +147,14 @@ def run():
     hero.set_position(center)
     game_interface.elements.append(interface.HealthBar(hero))
     cudgel = Weapon('cudgel', Vector2(0, 0))
-    # hero.set_weapon(cudgel)
+    hero.set_weapon(cudgel)
 
     potion = GameObject('heal_potion', 'potions/', Vector2(0, 0), False, 1)
     potion.set_position(Vector2(100, 100))
     add_game_object(potion, game_map, game_interface)
 
+
+    hero.inventory = Inventory()
     entity = Entity('hero', '', Vector2(30, 70))
     entity.set_position(Vector2(200, 200))
     cudgel2 = Weapon('cudgel', Vector2(0, 0))
@@ -164,5 +176,8 @@ def run():
         game_map.draw(screen)
         hero.draw(screen)
         game_interface.draw(screen)
+
+        hero.inventory.draw_whole(screen)
+        hero.inventory.draw_inventory_panel(screen)
 
         pygame.display.update()

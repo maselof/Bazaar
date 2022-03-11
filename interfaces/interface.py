@@ -36,6 +36,7 @@ class HealthBar(IDrawable):
         self.__frame.scale(0.7, 0.5)
         self.__band.scale(0.7, 0.5)
         self.__initial_band_size = int(self.__band.get_size().x)
+        self.priority = game_logic.hp_bar_priority
 
     def center_x(self) -> int:
         bar_size = self.__frame.image.get_size()[0]
@@ -75,6 +76,11 @@ class Button:
         else:
             pygame.draw.rect(self.screen, self.inactive_color, (x, y, self.w, self.h))
         print_text(self.screen, message=message, x=x + 10, y=y + 10, font_size=font_size)
+
+
+def get_text_size(message, font_size=30, font_type="res/fonts/a_Alterna.ttf") -> Vector2:
+    font = pygame.font.Font(font_type, font_size)
+    return Vector2(font.size(message))
 
 
 def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/fonts/a_Alterna.ttf", font_size=30):

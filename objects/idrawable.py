@@ -3,6 +3,8 @@ import pygame
 
 class IDrawable:
 
+    priority: int
+
     def update(self):
         pass
 

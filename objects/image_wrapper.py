@@ -16,7 +16,8 @@ class ImageWrapper:
         else:
             self.image = Surface(0, 0)
 
-        self.rect = self.image.get_rect()
+        width, height = self.image.get_size()
+        self.rect = Rect(0, 0, width, height)
 
     def set_position(self, point: Vector2):
         self.rect.x, self.rect.y = point

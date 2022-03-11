@@ -39,7 +39,7 @@ class Entity(GameObject):
         self.max_hp = 100
         self.hp = 100
 
-        self.weapon = game_logic.get_item(1)
+        self.weapon = game_logic.get_item('fists')
 
         self.attack_rects = []
         self.c_attack_rects = 5
@@ -113,8 +113,8 @@ class Entity(GameObject):
         self.weapon.direction = self.direction
         self.weapon.set_action(self.current_action.animation.name, self.current_action.args)
         self.weapon.update()
-
         self.build_attack_rects()
+        self.inventory.update()
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)

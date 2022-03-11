@@ -3,6 +3,7 @@ from map import *
 import interface
 from camera import *
 from inventory import HeroInventory
+from copy import copy
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -73,19 +74,36 @@ def event(screen, hero: Hero):
             elif event.key == pygame.K_s:
                 hero.movement_queue.append(Direction.DOWN)
 
+            # inventory
+            if hero.context == Context.INVENTORY:
+                if event.key == pygame.K_UP:
+                    hero.inventory.change_focus_item(-1 * game_logic.inventory_columns_count)
+                elif event.key == pygame.K_DOWN:
+                    hero.inventory.change_focus_item(game_logic.inventory_columns_count)
+                elif event.key == pygame.K_LEFT:
+                    hero.inventory.change_focus_item(-1)
+                elif event.key == pygame.K_RIGHT:
+                    hero.inventory.change_focus_item(1)
+
+
             # other
             if event.key == pygame.K_r:
                 print(hero.movement_queue)
-            if event.key == pygame.K_ESCAPE:
+            elif event.key == pygame.K_ESCAPE:
                 interface.pause(screen)
-            if event.key == pygame.K_SPACE:
+            elif event.key == pygame.K_SPACE:
                 hero.set_action('attacking', None)
-            if event.key == pygame.K_f:
+            elif event.key == pygame.K_f:
                 hero.hp -= 10
-            if event.key == pygame.K_e:
-                hero.take()
-            if event.key == pygame.K_TAB:
-               game_logic.draw_inventory = not game_logic.draw_inventory
+            elif event.key == pygame.K_e:
+                hero.interact()
+            elif event.key == pygame.K_TAB:
+                if hero.inventory.show:
+                    hero.inventory.show = False
+                    hero.context = Context.GAME
+                else:
+                    hero.inventory.show = True
+                    hero.context = Context.INVENTORY
 
 
 def show_menu():
@@ -113,11 +131,17 @@ def add_entity(entity: Entity, game_map: Map, game_interface: interface.Interfac
     game_map.game_objects.append(entity)
 
 
-def add_game_object(game_object: GameObject, game_map: Map, game_interface: interface.Interface):
+def add_game_object(game_object: GameObject, game_map: Map):
     game_map.game_objects.append(game_object)
 
 
+def add_interface_element(element: IDrawable):
+    game_interface.elements.append(element)
+    game_interface.elements.sort(key=lambda el: el.priority)
+
+
 game_map = Map()
+game_interface = interface.Interface()
 
 
 def get_collided_objects(area: [pygame.Rect]) -> [GameObject]:
@@ -143,14 +167,11 @@ def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
     return [nearest_object, min_distance]
 
 
-
 def run():
     pygame.init()
     pygame.display.set_caption("Игра")
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
-
-    game_interface = interface.Interface()
 
     hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height))
     hero.update()
@@ -158,17 +179,24 @@ def run():
     center = Vector2((game_logic.g_screen_width - hero_width) // 2,
                      (game_logic.g_screen_height - hero_height) // 2)
     hero.set_position(center)
-    game_interface.elements.append(interface.HealthBar(hero))
-    hero.set_weapon(game_logic.get_item(2))
+    add_interface_element(interface.HealthBar(hero))
+    add_interface_element(hero.inventory)
+    hero_weapon = game_logic.get_item('cudgel')
+    hero.set_weapon(hero_weapon)
 
-    potion = game_logic.get_item(0)
+    potion = game_logic.get_item('heal_potion')
     potion.set_position(Vector2(100, 100))
-    add_game_object(potion, game_map, game_interface)
+    add_game_object(potion, game_map)
+
+    cudgel = game_logic.get_item('cudgel')
+    cudgel.set_position(Vector2(700, 200))
+    add_game_object(cudgel, game_map)
 
     entity = Entity('hero', '', Vector2(30, 70))
     entity.set_position(Vector2(200, 200))
-    entity.set_weapon(game_logic.get_item(1))
+    entity.set_weapon(game_logic.get_item('fists'))
     add_entity(entity, game_map, game_interface)
+    add_interface_element(entity.inventory)
 
     camera = Camera(game_map, hero)
 
@@ -186,8 +214,5 @@ def run():
         game_map.draw(screen)
         hero.draw(screen)
         game_interface.draw(screen)
-
-        hero.inventory.draw(screen)
-        hero.inventory.draw_inventory_panel(screen)
 
         pygame.display.update()

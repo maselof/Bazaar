@@ -2,6 +2,7 @@ from weapon import Weapon
 from item import Item
 from pygame import Vector2
 from effect import Effect
+from copy import deepcopy
 
 
 # general
@@ -34,6 +35,9 @@ inventory_top_offset = 30
 inventory_left_cell_offset = 5
 inventory_items_offset = 11
 inventory_min_raws_count = 5
+inventory_text_size = 16
+inventory_background_color = (129, 81, 54)
+draw_inventory = False
 
 # Bottom panel
 panel_items_count = 10
@@ -41,6 +45,9 @@ panel_bottom_offset = 30
 panel_items_offset = 11
 panel_items_size = 56
 
+# interface priorities
+hp_bar_priority = 1
+inventory_priority = 2
 
 # effect funcs:
 
@@ -48,25 +55,23 @@ def healing(entity: object):
     entity.hp += potion_hp
 
 
-EFFECTS = {0: Effect('Healing', healing, 1, 0)}
+EFFECTS = {'Healing': Effect('Healing', healing, 1, 0)}
 
 
-def get_effect(id: int) -> Effect:
-    return EFFECTS.get(id)
+def get_effect(id: str) -> Effect:
+    effect = EFFECTS.get(id)
+    return Effect(effect.name, effect.action_func, effect.duration, effect.delay)
 
 
 # id: GameObject
-ITEMS = {0: Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect(0)]),
-         1: Weapon('fists', 30, [], []),
-         2: Weapon('cudgel', 80, [], [])}
+ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')]),
+         'fists': Weapon('fists', 30, [], []),
+         'cudgel': Weapon('cudgel', 80, [], [])}
 
 
-def get_item(id: int):
-    return ITEMS.get(id)
+def get_item(id: str):
+    item = ITEMS.get(id)
+    if isinstance(item, Weapon):
+        return Weapon(item.name, item.attack_range, item.effects, item.attack_effects)
+    return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects)
 
-
-
-
-
-
-draw_inventory = False

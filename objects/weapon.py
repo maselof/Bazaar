@@ -1,15 +1,22 @@
-from game_object import *
+from pygame import Vector2
+from action import Action
+from animation import Animation
+from item import Item
+from effect import Effect
 
 
-class Weapon(GameObject):
-
+class Weapon(Item):
     attack_range: float
+    attack_effects: [Effect]
 
     def __init__(self,
                  name: str,
-                 size: pygame.Vector2):
-        super().__init__(name, 'weapons/', size, True)
-        self.attack_range = 30
+                 attack_range: float,
+                 hero_effects: [Effect],
+                 attack_effects: [Effect]):
+        super().__init__(name, 'weapons/', Vector2(0, 0), True, 1, hero_effects)
+        self.attack_range = attack_range
+        self.attack_effects = attack_effects
 
     def animations_init(self):
         path = 'res/animations/objects/' + self.animations_path + self.name + '/'
@@ -17,3 +24,4 @@ class Weapon(GameObject):
                         'walking': Action(self.action_idle, Animation(path, 'walking')),
                         'attacking': Action(self.action_idle, Animation(path, 'attacking'))}
         self.current_action = self.actions['idle']
+

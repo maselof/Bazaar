@@ -1,25 +1,27 @@
 import game_logic
-from game_object import *
-from action import *
 from pygame.math import Vector2
-from weapon import Weapon
+from item import *
+from weapon import *
 import game_cycle
-from inventory import Inventory
+from inventory import GameContainer
 
 
 class Entity(GameObject):
     speed: int
     direction_vector: Vector2
     left_flip: bool
-    inventory: Inventory
+    inventory: GameContainer
     max_hp: int
     hp: int
 
     weapon: Weapon
 
-    # delete
     attack_rects: [pygame.Rect]
     c_attack_rects: int
+
+    effects: [Effect]
+
+    inventory: GameContainer
 
     def __init__(self,
                  name: str,
@@ -37,11 +39,12 @@ class Entity(GameObject):
         self.max_hp = 100
         self.hp = 100
 
-        self.weapon = Weapon('fists', Vector2(0, 0))
+        self.weapon = game_logic.get_item(1)
 
-        # delete
         self.attack_rects = []
         self.c_attack_rects = 5
+
+        self.inventory = GameContainer()
 
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
@@ -72,18 +75,18 @@ class Entity(GameObject):
         self.attack_rects.clear()
         height = self.weapon.attack_range // self.c_attack_rects
         for i in range(self.c_attack_rects):
-            width = height * (i + 1) * 2
+            width = height * (self.c_attack_rects - (i + 1)) * 2
             if is_horizontal(self.direction):
                 w = height
                 h = width
-                pos_x = self.collision_rect.centerx + self.direction.value.x * w * i
+                pos_x = self.collision_rect.centerx + self.direction.value.x * w * (i + 1 * (self.direction == Direction.LEFT))
                 pos_y = self.collision_rect.centery - h // 2
                 self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
             else:
                 w = width
                 h = height
                 pos_x = self.collision_rect.centerx - w // 2
-                pos_y = self.collision_rect.centery + self.direction.value.y * h * i
+                pos_y = self.collision_rect.centery + self.direction.value.y * h * (i + 1 * (self.direction == Direction.UP))
                 self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
 
     def action_attacking(self, args: [object]):
@@ -97,7 +100,6 @@ class Entity(GameObject):
     def get_damage(self, damage: int):
         self.hp -= damage
         print(f'{self.name} gets {damage} damage')
-
 
     def set_weapon(self, weapon: Weapon):
         self.weapon = weapon
@@ -120,5 +122,6 @@ class Entity(GameObject):
 
         # attack area
         #for r in self.attack_rects:
-        #    pygame.draw.rect(screen, (255, 0, 0), r)
+        #    pygame.draw.rect(screen, pygame.Color(255, 0, 0, 250), r)
+
 

@@ -37,3 +37,6 @@ class ImageWrapper:
 
     def set_size(self, size: Vector2):
         self.image = transform.scale(self.image, [int(size.x), int(size.y)])
+
+    def draw(self, screen: Surface):
+        screen.blit(self.image, self.rect)

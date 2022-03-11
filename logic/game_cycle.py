@@ -1,16 +1,17 @@
 import sys
-
-import pygame
-
 from map import *
 import interface
 from camera import *
-from inventory import Inventory
+from inventory import HeroInventory
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
     for i in range(queue.count(direction)):
         queue.remove(direction)
+
+
+def draw(screen: pygame.Surface, image: pygame.Surface, rect: pygame.Surface):
+    screen.blit(image, rect)
 
 
 def handle_movement(hero):
@@ -46,7 +47,6 @@ def handle_movement(hero):
 
 def event(screen, hero: Hero):
     handle_movement(hero)
-    inventory = Inventory()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -82,11 +82,10 @@ def event(screen, hero: Hero):
                 hero.set_action('attacking', None)
             if event.key == pygame.K_f:
                 hero.hp -= 10
+            if event.key == pygame.K_e:
+                hero.take()
             if event.key == pygame.K_TAB:
                game_logic.draw_inventory = not game_logic.draw_inventory
-            if event.key == pygame.K_1:
-                hero.inventory.increase('potion')
-
 
 
 def show_menu():
@@ -131,6 +130,20 @@ def get_collided_objects(area: [pygame.Rect]) -> [GameObject]:
     return collided
 
 
+def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
+    pos = Vector2(game_object.rect.centerx, game_object.rect.centery)
+    min_distance = 1000000
+    nearest_object = None
+    for go in game_map.game_objects:
+        go_pos = Vector2(go.rect.centerx, go.rect.centery)
+        distance = go_pos.distance_to(pos)
+        if distance < min_distance:
+            min_distance = distance
+            nearest_object = go
+    return [nearest_object, min_distance]
+
+
+
 def run():
     pygame.init()
     pygame.display.set_caption("Игра")
@@ -146,19 +159,15 @@ def run():
                      (game_logic.g_screen_height - hero_height) // 2)
     hero.set_position(center)
     game_interface.elements.append(interface.HealthBar(hero))
-    cudgel = Weapon('cudgel', Vector2(0, 0))
-    hero.set_weapon(cudgel)
+    hero.set_weapon(game_logic.get_item(2))
 
-    potion = GameObject('heal_potion', 'potions/', Vector2(0, 0), False, 1)
+    potion = game_logic.get_item(0)
     potion.set_position(Vector2(100, 100))
     add_game_object(potion, game_map, game_interface)
 
-
-    hero.inventory = Inventory()
     entity = Entity('hero', '', Vector2(30, 70))
     entity.set_position(Vector2(200, 200))
-    cudgel2 = Weapon('cudgel', Vector2(0, 0))
-    entity.set_weapon(cudgel2)
+    entity.set_weapon(game_logic.get_item(1))
     add_entity(entity, game_map, game_interface)
 
     camera = Camera(game_map, hero)
@@ -166,6 +175,7 @@ def run():
     while True:
         clock.tick(game_logic.g_fps)
         game_logic.g_timer = (game_logic.g_timer + 1) % game_logic.g_fps
+        pygame.draw.rect(screen, (255, 255, 255), Rect(0, 0, game_logic.g_screen_width, game_logic.g_screen_height))
 
         game_map.update()
         hero.update()
@@ -177,7 +187,7 @@ def run():
         hero.draw(screen)
         game_interface.draw(screen)
 
-        hero.inventory.draw_whole(screen)
+        hero.inventory.draw(screen)
         hero.inventory.draw_inventory_panel(screen)
 
         pygame.display.update()

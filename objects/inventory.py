@@ -7,9 +7,9 @@ from idrawable import IDrawable
 
 
 class GameContainer(IDrawable):
-    container = [game_logic.Item]
+    container: [game_logic.Item]
     bg_pos: Vector2
-    show: bool
+    is_open: bool
     show_frame: bool
     focus_item_index: int
 
@@ -17,7 +17,7 @@ class GameContainer(IDrawable):
         self.container = []
         self.inv_cell_img = pygame.image.load('res/images/interface/inventory/inv_cell.png')
         self.frame_img = ImageWrapper('res/images/interface/inventory/frame.png')
-        self.show = False
+        self.is_open = False
         self.show_frame = False
         self.focus_item_index = 0
         width, height = self.inv_cell_img.get_size()
@@ -26,25 +26,43 @@ class GameContainer(IDrawable):
                       Vector2(-1, 1) * game_logic.inventory_top_offset
         self.priority = game_logic.inventory_priority
 
+    def close(self):
+        self.is_open = False
+        self.show_frame = False
+
     def change_focus_item(self, index: int):
         new_index = self.focus_item_index + index
-        print(len(self.container))
+        print(f'Container len: {len(self.container)}')
         if (new_index < 0) | (new_index >= len(self.container)):
             return
         self.focus_item_index = new_index
-        print(new_index)
+        print(f'New focus index: {new_index}')
+        if self.get_focus_item():
+            print(f'Focus item: {self.get_focus_item().name}')
+        else:
+            print('Focus item is null')
+
+    def get_item(self, index: int):
+        if index < 0 or index >= len(self.container):
+            return None
+        return self.container[index]
+
+    def get_focus_item(self):
+        if self.focus_item_index >= len(self.container):
+            return None
+        return self.container[self.focus_item_index]
 
     def add_item(self, item: game_logic.Item):
         for i in self.container:
             if i.name == item.name:
-                i.count += item.count
+                i.count += 1
                 return
-        self.container.append(item)
+        self.container.append(game_logic.get_item(item.name))
 
-    def remove_item(self, item: game_logic.Item, count: int):
+    def remove_item(self, item: game_logic.Item):
         for i in self.container:
             if i.name == item.name:
-                i.count = max(0, i.count - count)
+                i.count -= 1
 
     def update(self):
         for item in self.container:
@@ -52,7 +70,7 @@ class GameContainer(IDrawable):
                 self.container.remove(item)
 
     def draw(self, screen: pygame.Surface):
-        if not self.show:
+        if not self.is_open:
             return
 
         raws_count = max(len(self.container) // game_logic.inventory_columns_count + 1,
@@ -116,3 +134,5 @@ class HeroInventory(GameContainer):
             self.inventory_panel[i].icon.draw(screen)
 
 
+class ILootable:
+    inventory: GameContainer

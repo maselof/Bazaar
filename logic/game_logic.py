@@ -45,17 +45,33 @@ panel_bottom_offset = 30
 panel_items_offset = 11
 panel_items_size = 56
 
+# Dialog window
+dw_first_layer_color = (152, 94, 63)
+dw_second_layer_color = (185, 122, 87)
+dw_text_size = 20
+dw_text_color = (255, 255, 255)
+dw_layers_offset = 10
+dw_text_offset = Vector2(30, 10)
+dw_bottom_offset = 200
+
 # interface priorities
 hp_bar_priority = 1
 inventory_priority = 2
+dialog_window_priority = 2
 
 # effect funcs:
+
 
 def healing(entity: object):
     entity.hp += potion_hp
 
 
-EFFECTS = {'Healing': Effect('Healing', healing, 1, 0)}
+def bleeding(entity: object):
+    entity.hp -= 10
+
+
+EFFECTS = {'Healing': Effect('Healing', healing, 1, 1),
+           'Bleeding': Effect('Bleeding', bleeding, 300, 60)}
 
 
 def get_effect(id: str) -> Effect:

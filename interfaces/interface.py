@@ -3,6 +3,8 @@ from entity import *
 from image_wrapper import ImageWrapper
 from idrawable import *
 import game_logic
+from inventory import ILootable
+from hero import *
 
 
 class Interface(IDrawable):
@@ -18,6 +20,51 @@ class Interface(IDrawable):
     def draw(self, screen: pygame.Surface):
         for el in self.elements:
             el.draw(screen)
+
+
+class DialogWindow(IDrawable):
+    message: str
+    show: bool
+    priority: int
+    hero: Hero
+
+    def __init__(self,
+                 hero: Hero):
+        self.message = ''
+        self.hero = hero
+        self.show = False
+        self.priority = game_logic.dialog_window_priority
+
+    def update(self):
+        go, distance = game_cycle.get_nearest_object(self.hero)
+        if not go or distance > self.hero.interact_radius:
+            self.show = False
+            return
+        self.show = True
+        if isinstance(go, Item):
+            self.message = 'Take (E)'
+        elif isinstance(go, ILootable):
+            self.message = 'Loot (E)'
+
+    def draw(self, screen: pygame.Surface):
+        if not self.show:
+            return
+
+        text_size = get_text_size(self.message, game_logic.dw_text_size)
+
+        second_layer_size = text_size + game_logic.dw_text_offset * 2
+        first_layer_size = second_layer_size + Vector2(2, 2) * game_logic.dw_layers_offset
+        first_layer_pos = Vector2((game_logic.g_screen_width - first_layer_size.x) // 2, game_logic.g_screen_height - game_logic.dw_bottom_offset)
+        second_layer_pos = first_layer_pos + Vector2(1, 1) * game_logic.dw_layers_offset
+
+        text_pos = second_layer_pos + (second_layer_size - text_size) // 2
+
+        pygame.draw.rect(screen, game_logic.dw_first_layer_color, Rect(first_layer_pos.x, first_layer_pos.y,
+                                                                       first_layer_size.x, first_layer_size.y))
+        pygame.draw.rect(screen, game_logic.dw_second_layer_color, Rect(second_layer_pos.x, second_layer_pos.y,
+                                                                        second_layer_size.x, second_layer_size.y))
+        print_text(screen, self.message, text_pos.x, text_pos.y,game_logic.dw_text_color, font_size=game_logic.dw_text_size)
+
 
 
 class HealthBar(IDrawable):

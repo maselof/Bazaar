@@ -28,7 +28,8 @@ class Effect:
     def update(self, entity: object):
         if self.finished:
             return
-        self.action_func(entity)
+        if self.__counter % self.delay == 0:
+            self.action_func(entity)
         self.__counter += 1
         if self.__counter >= self.duration:
             self.finished = True

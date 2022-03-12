@@ -1,4 +1,7 @@
 import sys
+
+import pygame
+
 from map import *
 import interface
 from camera import *
@@ -83,8 +86,40 @@ def event(screen, hero: Hero):
                 elif event.key == pygame.K_LEFT:
                     hero.inventory.change_focus_item(-1)
                 elif event.key == pygame.K_RIGHT:
-                    hero.inventory.change_focus_item(1)
+                    if (hero.looting_object != None) & (
+                            ((hero.inventory.focus_item_index + 1) % game_logic.inventory_columns_count == 0) |
+                            (hero.inventory.focus_item_index + 1 >= len(hero.inventory.container))):
+                        hero.change_context(Context.LOOTING)
+                    else:
+                        hero.inventory.change_focus_item(1)
+                elif event.key == pygame.K_RETURN:
+                    focus_item = hero.inventory.get_focus_item()
+                    if focus_item:
+                        if hero.looting_object and hero.looting_object.inventory.is_open:
+                            hero.inventory.remove_item(focus_item)
+                            print('GIVE ' + focus_item.name)
+                            hero.looting_object.inventory.add_item(game_logic.get_item(focus_item.name))
+                        else:
+                            hero.use(focus_item)
 
+            elif hero.context == Context.LOOTING:
+                if event.key == pygame.K_UP:
+                    hero.looting_object.inventory.change_focus_item(-1 * game_logic.inventory_columns_count)
+                elif event.key == pygame.K_DOWN:
+                    hero.looting_object.inventory.change_focus_item(game_logic.inventory_columns_count)
+                elif event.key == pygame.K_LEFT:
+                    if (hero.inventory.is_open) & ((hero.looting_object.inventory.focus_item_index % game_logic.inventory_columns_count == 0)):
+                        hero.change_context(Context.INVENTORY)
+                    else:
+                        hero.looting_object.inventory.change_focus_item(-1)
+                elif event.key == pygame.K_RIGHT:
+                    hero.looting_object.inventory.change_focus_item(1)
+                elif event.key == pygame.K_RETURN:
+                    looted_item = hero.looting_object.inventory.get_focus_item()
+                    if looted_item:
+                        hero.looting_object.inventory.remove_item(looted_item)
+                        print('GET ' + looted_item.name)
+                        hero.inventory.add_item(game_logic.get_item(looted_item.name))
 
             # other
             if event.key == pygame.K_r:
@@ -98,12 +133,14 @@ def event(screen, hero: Hero):
             elif event.key == pygame.K_e:
                 hero.interact()
             elif event.key == pygame.K_TAB:
-                if hero.inventory.show:
-                    hero.inventory.show = False
-                    hero.context = Context.GAME
+                if hero.inventory.is_open:
+                    if (hero.looting_object != None) and hero.looting_object.inventory.is_open:
+                        hero.change_context(Context.LOOTING)
+                        hero.inventory.close()
+                    else:
+                        hero.change_context(Context.GAME)
                 else:
-                    hero.inventory.show = True
-                    hero.context = Context.INVENTORY
+                    hero.change_context(Context.INVENTORY)
 
 
 def show_menu():
@@ -167,6 +204,10 @@ def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
     return [nearest_object, min_distance]
 
 
+def get_distance(object1: GameObject, object2: GameObject):
+    return object1.get_position().distance_to(object2.get_position())
+
+
 def run():
     pygame.init()
     pygame.display.set_caption("Игра")
@@ -181,7 +222,7 @@ def run():
     hero.set_position(center)
     add_interface_element(interface.HealthBar(hero))
     add_interface_element(hero.inventory)
-    hero_weapon = game_logic.get_item('cudgel')
+    hero_weapon = game_logic.get_item('fists')
     hero.set_weapon(hero_weapon)
 
     potion = game_logic.get_item('heal_potion')
@@ -195,10 +236,14 @@ def run():
     entity = Entity('hero', '', Vector2(30, 70))
     entity.set_position(Vector2(200, 200))
     entity.set_weapon(game_logic.get_item('fists'))
+    entity.inventory.add_item(game_logic.get_item('cudgel'))
+    entity.inventory.add_item(game_logic.get_item('heal_potion'))
     add_entity(entity, game_map, game_interface)
     add_interface_element(entity.inventory)
 
     camera = Camera(game_map, hero)
+    dialog_window = interface.DialogWindow(hero)
+    add_interface_element(dialog_window)
 
     while True:
         clock.tick(game_logic.g_fps)

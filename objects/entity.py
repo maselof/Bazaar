@@ -4,9 +4,10 @@ from item import *
 from weapon import *
 import game_cycle
 from inventory import GameContainer
+from inventory import ILootable
 
 
-class Entity(GameObject):
+class Entity(GameObject, ILootable):
     speed: int
     direction_vector: Vector2
     left_flip: bool
@@ -20,8 +21,6 @@ class Entity(GameObject):
     c_attack_rects: int
 
     effects: [Effect]
-
-    inventory: GameContainer
 
     def __init__(self,
                  name: str,
@@ -45,6 +44,7 @@ class Entity(GameObject):
         self.c_attack_rects = 5
 
         self.inventory = GameContainer()
+        self.effects = []
 
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
@@ -63,7 +63,6 @@ class Entity(GameObject):
 
     def action_idle(self, args: [object]):
         super().action_idle(args)
-
         self.direction_vector = Direction.STAND.value
 
     def action_walking(self, args: [object]):
@@ -96,16 +95,24 @@ class Entity(GameObject):
         for go in collided:
             if isinstance(go, Entity):
                 go.get_damage(10)
+                for effect in self.weapon.attack_effects:
+                    effect.start()
+                    go.effects.append(effect)
 
     def get_damage(self, damage: int):
-        self.hp -= damage
-        print(f'{self.name} gets {damage} damage')
+        self.hp = max(self.hp - damage, 0)
 
     def set_weapon(self, weapon: Weapon):
         self.weapon = weapon
 
         self.weapon.actions.get('walking').animation.speed = self.actions.get('walking').animation.speed
         self.weapon.actions.get('attacking').animation.speed = self.actions.get('attacking').animation.speed
+
+    def update_effects(self):
+        for effect in self.effects:
+            effect.update(self)
+            if effect.finished:
+                self.effects.remove(effect)
 
     def update(self):
         super().update()
@@ -115,6 +122,7 @@ class Entity(GameObject):
         self.weapon.update()
         self.build_attack_rects()
         self.inventory.update()
+        self.update_effects()
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)

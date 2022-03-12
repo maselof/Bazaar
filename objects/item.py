@@ -19,3 +19,5 @@ class Item(GameObject):
         self.effects = effects
         self.icon = ImageWrapper('res/images/icons/' + self.name + '.png')
         self.count = 1
+
+

@@ -1,6 +1,7 @@
 import game_logic
 from entity import *
 from inventory import HeroInventory
+from inventory import ILootable
 from context import Context
 
 
@@ -20,9 +21,12 @@ class Hero(Entity):
         self.context = Context.GAME
         self.inventory = HeroInventory()
         self.looting_object = None
+        self.enable_random_actions = False
+        self.speed = 5
+        self.ai.is_enemy = False
 
     def action_walking(self, args: [object]):
-        self.direction_vector = args[0]
+        self.direction_vector = game_cycle.check_collisions(self, args[0])
 
     def check_looting_object_distance(self):
         if not self.looting_object:

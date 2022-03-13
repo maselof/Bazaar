@@ -80,7 +80,7 @@ class GameObject(IDrawable):
 
     def draw(self, screen: pygame.Surface):
         screen.blit(self.image, self.rect)
-        # pygame.draw.rect(screen, (0, 255, 0), self.collision_rect)
+        #pygame.draw.rect(screen, (0, 255, 0), self.collision_rect)
 
 
 

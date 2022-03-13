@@ -1,3 +1,4 @@
+import direction
 import game_logic
 from pygame.math import Vector2
 from item import *
@@ -5,6 +6,26 @@ from weapon import *
 import game_cycle
 from inventory import GameContainer
 from inventory import ILootable
+
+
+class AI:
+    duration: int
+    delay: int
+    counter: int
+    finished: bool
+
+    agro_radius: int
+    is_enemy: bool
+    is_attacking: bool
+
+    def __init__(self):
+        self.duration = 0
+        self.delay = 0
+        self.counter = 0
+        self.finished = True
+        self.agro_radius = 0
+        self.is_enemy = False
+        self.is_attacking = False
 
 
 class Entity(GameObject, ILootable):
@@ -22,6 +43,9 @@ class Entity(GameObject, ILootable):
 
     effects: [Effect]
 
+    ai: AI
+    enable_random_actions: bool
+
     def __init__(self,
                  name: str,
                  animations_path: str,
@@ -30,7 +54,7 @@ class Entity(GameObject, ILootable):
                  ):
         super().__init__(name, animations_path, size, True, scaling)
 
-        self.speed = 5
+        self.speed = 3
         self.direction_vector = Vector2(0, 0)
         self.left_flip = False
         self.direction = Direction.LEFT
@@ -45,6 +69,11 @@ class Entity(GameObject, ILootable):
 
         self.inventory = GameContainer()
         self.effects = []
+
+        self.enable_random_actions = False
+        self.ai = AI()
+        self.ai.is_enemy = True
+        self.ai.agro_radius = game_logic.enemy_agro_radius
 
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
@@ -66,7 +95,8 @@ class Entity(GameObject, ILootable):
         self.direction_vector = Direction.STAND.value
 
     def action_walking(self, args: [object]):
-        self.direction_vector = args[0]
+        dir_v = game_cycle.check_collisions(self, args[0])
+        self.direction_vector = dir_v
         new_pos = self.get_position() + self.direction_vector * self.speed
         self.set_position(new_pos)
 
@@ -89,9 +119,10 @@ class Entity(GameObject, ILootable):
                 self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
 
     def action_attacking(self, args: [object]):
+        self.direction_vector = Direction.STAND.value
         if not self.current_action.animation.finished:
             return
-        collided = game_cycle.get_collided_objects(self.attack_rects)
+        collided = game_cycle.get_collided_objects(self, self.attack_rects)
         for go in collided:
             if isinstance(go, Entity):
                 go.get_damage(10)
@@ -114,8 +145,74 @@ class Entity(GameObject, ILootable):
             if effect.finished:
                 self.effects.remove(effect)
 
+    def do_random_movement(self):
+        if self.ai.finished:
+            dir1 = direction.get_random_direction()
+            dir2 = direction.get_random_direction()
+            if dir1 == dir2:
+                direction_vector = dir1.value
+            else:
+                direction_vector = dir1.value + dir2.value
+
+            if dir1 == Direction.STAND and dir2 == Direction.STAND:
+                pass
+            elif dir1 == Direction.STAND:
+                self.direction = dir2
+            else:
+                self.direction = dir1
+
+            if direction_vector == Vector2(0, 0):
+                self.set_action('idle', None)
+            else:
+                self.set_action('walking', direction_vector)
+
+            self.ai.duration = random.randint(60, 300)
+            self.ai.delay = random.randint(60, 300)
+            self.ai.counter = 0
+            self.ai.finished = False
+        elif self.ai.duration != 0:
+            self.ai.counter += 1
+            if self.ai.counter >= self.ai.duration:
+                self.ai.counter = 0
+                self.ai.duration = 0
+        else:
+            self.set_action('idle', None)
+            self.ai.counter += 1
+            if self.ai.counter >= self.ai.delay:
+                self.ai.finished = True
+
+    def attack_entity(self, entity, distance: int):
+        # print('attacking!')
+        if distance > self.weapon.attack_range:
+            pos_dif = entity.get_position() - self.get_position()
+            dir1 = Direction.LEFT if pos_dif.x < 0 else Direction.RIGHT
+            dir2 = Direction.UP if pos_dif.y < 0 else Direction.DOWN
+            direction_vector = dir1.value + dir2.value
+
+            if abs(pos_dif.x) > abs(pos_dif.y):
+                self.direction = dir1
+            else:
+                self.direction = dir2
+            self.set_action('walking', direction_vector)
+        else:
+            self.set_action('attacking', None)
+
+    def do_ai(self):
+        object, distance = game_cycle.get_nearest_object(self)
+        # print(object)
+        # print(distance)
+        if isinstance(object, Entity):
+            if distance <= self.ai.agro_radius:
+                self.attack_entity(object, distance)
+            else:
+                self.do_random_movement()
+
     def update(self):
         super().update()
+
+        if self.enable_random_actions:
+            self.do_ai()
+
         self.weapon.set_position(self.get_position())
         self.weapon.direction = self.direction
         self.weapon.set_action(self.current_action.animation.name, self.current_action.args)
@@ -131,5 +228,3 @@ class Entity(GameObject, ILootable):
         # attack area
         #for r in self.attack_rects:
         #    pygame.draw.rect(screen, pygame.Color(255, 0, 0, 250), r)
-
-

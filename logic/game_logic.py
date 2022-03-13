@@ -25,9 +25,11 @@ hero_take_radius = 50
 # entities
 g_entity_walking_anim_speed = 0.2
 g_entity_attacking_anim_speed = 0.2
+enemy_agro_radius = 100
 
 # other
 potion_hp = 20
+collision_offset = 5
 
 # Inventory
 inventory_columns_count = 5
@@ -80,7 +82,7 @@ def get_effect(id: str) -> Effect:
 
 
 # id: GameObject
-ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')]),
+ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(20, 20), False, 1, [get_effect('Healing')]),
          'fists': Weapon('fists', 30, [], []),
          'cudgel': Weapon('cudgel', 80, [], [])}
 

@@ -5,6 +5,7 @@ class Map(IDrawable):
     image: pygame.Surface
     rect: pygame.Rect
     game_objects: [IDrawable]
+    hero: IDrawable
 
     def __init__(self):
         self.image = pygame.image.load('res/images/bg.png')

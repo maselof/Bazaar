@@ -74,7 +74,7 @@ class Hero(Entity):
         print(object)
         if isinstance(object, Item):
             self.inventory.add_item(object)
-            game_cycle.game_map.game_objects.remove(object)
+            game_cycle.game_map.remove_game_object(object)
         elif isinstance(object, Entity):
             if (self.looting_object != None) and self.looting_object.inventory.is_open:
                 self.looting_object.inventory.close()

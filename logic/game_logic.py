@@ -14,6 +14,7 @@ g_fps = 60
 # screen
 g_screen_width = 1680
 g_screen_height = 1000
+g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
 # objects sizes
 
@@ -61,6 +62,9 @@ hp_bar_priority = 1
 inventory_priority = 2
 dialog_window_priority = 2
 
+# map
+map_frame_size = Vector2(1680, 1050)
+
 # effect funcs:
 
 
@@ -83,7 +87,7 @@ def get_effect(id: str) -> Effect:
 
 # id: GameObject
 ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(20, 20), False, 1, [get_effect('Healing')]),
-         'fists': Weapon('fists', 30, [], []),
+         'fists': Weapon('fists', 40, [], []),
          'cudgel': Weapon('cudgel', 80, [], [])}
 
 

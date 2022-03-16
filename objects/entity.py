@@ -70,7 +70,7 @@ class Entity(GameObject, ILootable):
         self.inventory = GameContainer()
         self.effects = []
 
-        self.enable_random_actions = False
+        self.enable_random_actions = True
         self.ai = AI()
         self.ai.is_enemy = True
         self.ai.agro_radius = game_logic.enemy_agro_radius

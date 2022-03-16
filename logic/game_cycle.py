@@ -148,7 +148,7 @@ def show_menu():
     pygame.font.init()
     pygame.display.set_caption("Игра")
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
-    menu_bg = pygame.image.load("res/images/bg.png")
+    menu_bg = pygame.image.load("res/images/interface/menu/background.png")
     show = True
     start_button = interface.Button(540, 100, screen)
     quit_button = interface.Button(540, 100, screen)
@@ -165,11 +165,11 @@ def show_menu():
 
 def add_entity(entity: Entity, game_map: Map, game_interface: interface.Interface):
     game_interface.elements.append(interface.HealthBar(entity))
-    game_map.game_objects.append(entity)
+    game_map.add_game_object(entity)
 
 
 def add_game_object(game_object: GameObject, game_map: Map):
-    game_map.game_objects.append(game_object)
+    game_map.add_game_object(game_object)
 
 
 def add_interface_element(element: IDrawable):
@@ -183,7 +183,7 @@ game_interface = interface.Interface()
 
 def get_collided_objects(game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
     collided = []
-    for go in game_map.game_objects:
+    for go in game_map.visible_game_objects:
         if go == game_object:
             continue
 
@@ -203,7 +203,7 @@ def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
         min_distance = pos.distance_to(Vector2(game_map.hero.rect.centerx, game_map.hero.rect.centery))
         nearest_object = game_map.hero
 
-    for go in game_map.game_objects:
+    for go in game_map.visible_game_objects:
         if go == game_object:
             continue
 
@@ -221,26 +221,20 @@ def get_distance(object1: GameObject, object2: GameObject):
 
 def check_collisions(game_object: GameObject, vector: Vector2) -> Vector2:
     dir_vector = vector
-    #print(dir_vector)
     offset = Vector2(game_logic.collision_offset * (1 if dir_vector.x > 0 else -1 if dir_vector.x < 0 else 0),
                      game_logic.collision_offset * (1 if dir_vector.y > 0 else -1 if dir_vector.y < 0 else 0))
-    #print(game_object.name, offset)
     collision_rect = game_object.collision_rect.copy()
-    #print(collision_rect.center)
-    for go in game_map.game_objects:
+    for go in game_map.visible_game_objects:
         if go == game_object:
             continue
         if dir_vector == Vector2(0, 0):
             return dir_vector
         if go.collision_rect.colliderect(collision_rect.move(vector.x + offset.x, 0)):
-            print('alox')
             dir_vector.x = 0
         if go.collision_rect.colliderect(collision_rect.move(0, vector.y + offset.y)):
-            print('aloy')
             dir_vector.y = 0
         if dir_vector == Vector2(1, 1) and go.collision_rect.colliderect(collision_rect.move(vector.x + offset.x, vector.y + offset.y)):
             dir_vector = Vector2(0, 0)
-    #print(dir_vector)
     return dir_vector
 
 
@@ -272,7 +266,7 @@ def run():
     add_game_object(cudgel, game_map)
 
     entity = Entity('hero', '', Vector2(30, 70))
-    entity.set_position(Vector2(500, 500))
+    entity.set_position(Vector2(200, 200))
     entity.set_weapon(game_logic.get_item('fists'))
     entity.inventory.add_item(game_logic.get_item('cudgel'))
     entity.inventory.add_item(game_logic.get_item('heal_potion'))

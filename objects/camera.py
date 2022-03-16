@@ -16,7 +16,7 @@ class Camera:
         if back_vector == Vector2(0, 0):
             return
         self.map.move(back_vector)
-        for go in self.map.game_objects:
+        for go in self.map.all_game_objects:
             if go != self.hero:
                 go.move(back_vector)
 

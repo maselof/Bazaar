@@ -1,9 +1,4 @@
-import pygame
-from entity import *
-from image_wrapper import ImageWrapper
-from idrawable import *
-import game_logic
-from inventory import ILootable
+from inventory import *
 from hero import *
 
 
@@ -50,7 +45,7 @@ class DialogWindow(IDrawable):
         if not self.show:
             return
 
-        text_size = get_text_size(self.message, game_logic.dw_text_size)
+        text_size = game_logic.get_text_size(self.message, game_logic.dw_text_size)
 
         second_layer_size = text_size + game_logic.dw_text_offset * 2
         first_layer_size = second_layer_size + Vector2(2, 2) * game_logic.dw_layers_offset
@@ -63,8 +58,7 @@ class DialogWindow(IDrawable):
                                                                        first_layer_size.x, first_layer_size.y))
         pygame.draw.rect(screen, game_logic.dw_second_layer_color, Rect(second_layer_pos.x, second_layer_pos.y,
                                                                         second_layer_size.x, second_layer_size.y))
-        print_text(screen, self.message, text_pos.x, text_pos.y,game_logic.dw_text_color, font_size=game_logic.dw_text_size)
-
+        game_logic.print_text(screen, self.message, text_pos.x, text_pos.y,game_logic.dw_text_color, font_size=game_logic.dw_text_size)
 
 
 class HealthBar(IDrawable):
@@ -122,19 +116,7 @@ class Button:
                 action()
         else:
             pygame.draw.rect(self.screen, self.inactive_color, (x, y, self.w, self.h))
-        print_text(self.screen, message=message, x=x + 10, y=y + 10, font_size=font_size)
-
-
-def get_text_size(message, font_size=30, font_type="res/fonts/a_Alterna.ttf") -> Vector2:
-    font = pygame.font.Font(font_type, font_size)
-    return Vector2(font.size(message))
-
-
-def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/fonts/a_Alterna.ttf", font_size=30):
-
-    font_type = pygame.font.Font(font_type, font_size)
-    text = font_type.render(message, True, font_color)
-    screen.blit(text, (x, y))
+        game_logic.print_text(self.screen, message=message, x=x + 10, y=y + 10, font_size=font_size)
 
 
 def pause(screen):
@@ -145,7 +127,7 @@ def pause(screen):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        print_text(screen, "Press ENTER to continue", screen.get_size()[0] // 2 - 150, screen.get_size()[1] // 2 - 100)
+        game_logic.print_text(screen, "Press ENTER to continue", screen.get_size()[0] // 2 - 150, screen.get_size()[1] // 2 - 100)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
             paused = False

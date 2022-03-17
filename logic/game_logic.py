@@ -2,7 +2,7 @@ from weapon import Weapon
 from item import Item
 from pygame import Vector2
 from effect import Effect
-from copy import deepcopy
+import pygame
 
 
 # general
@@ -27,6 +27,7 @@ hero_take_radius = 50
 g_entity_walking_anim_speed = 0.2
 g_entity_attacking_anim_speed = 0.2
 enemy_agro_radius = 100
+entity_collision_offset = Vector2(60, 40)
 
 # other
 potion_hp = 20
@@ -86,7 +87,7 @@ def get_effect(id: str) -> Effect:
 
 
 # id: GameObject
-ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(20, 20), False, 1, [get_effect('Healing')]),
+ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')]),
          'fists': Weapon('fists', 40, [], []),
          'cudgel': Weapon('cudgel', 80, [], [])}
 
@@ -96,4 +97,16 @@ def get_item(id: str):
     if isinstance(item, Weapon):
         return Weapon(item.name, item.attack_range, item.effects, item.attack_effects)
     return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects)
+
+
+def get_text_size(message, font_size=30, font_type="res/fonts/a_Alterna.ttf") -> Vector2:
+    font = pygame.font.Font(font_type, font_size)
+    return Vector2(font.size(message))
+
+
+def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/fonts/a_Alterna.ttf", font_size=30):
+
+    font_type = pygame.font.Font(font_type, font_size)
+    text = font_type.render(message, True, font_color)
+    screen.blit(text, (x, y))
 

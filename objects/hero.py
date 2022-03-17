@@ -14,8 +14,9 @@ class Hero(Entity):
 
     def __init__(self,
                  size: Vector2,
+                 collision_rect_offset: pygame.Vector2 = Vector2(0, 0),
                  scaling: float = 1):
-        super().__init__('hero', '', size, scaling)
+        super().__init__('hero', '', size, collision_rect_offset, scaling)
         self.movement_queue = []
         self.interact_radius = game_logic.hero_take_radius
         self.context = Context.GAME
@@ -85,6 +86,9 @@ class Hero(Entity):
             else:
                 self.looting_object = object
                 self.change_context(Context.LOOTING)
+
+    def die(self):
+        pass
 
     def update(self):
         super().update()

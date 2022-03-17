@@ -11,6 +11,7 @@ class GameObject(IDrawable):
     rect: pygame.rect.Rect
     collision_rect: pygame.rect.Rect
     size: pygame.Vector2
+    collision_rect_offset: pygame.Vector2
     actions: {Action}
     current_action: Action
     direction: Direction
@@ -20,6 +21,7 @@ class GameObject(IDrawable):
                  name: str,
                  animations_path: str,
                  size: pygame.Vector2,
+                 collision_rect_offset: pygame.Vector2 = Vector2(0, 0),
                  directional: bool = True,
                  scaling: float = 1,
                  ):
@@ -34,7 +36,9 @@ class GameObject(IDrawable):
         self.image = self.current_action.animation.get_current_frame(self.direction)
 
         self.rect = self.image.get_rect()
-        col_pos = pygame.Vector2(self.rect.centerx, self.rect.centery) - size // 2
+        self.collision_rect_offset = collision_rect_offset
+        print(collision_rect_offset)
+        col_pos = pygame.Vector2(self.rect.x, self.rect.y) + collision_rect_offset
         self.collision_rect = pygame.Rect(col_pos.x, col_pos.y, size.x, size.y)
 
     def animations_init(self):
@@ -44,7 +48,7 @@ class GameObject(IDrawable):
 
     def set_position(self, point: pygame.Vector2):
         self.rect.x, self.rect.y = point
-        col_pos = pygame.Vector2(self.rect.centerx, self.rect.centery) - self.size // 2
+        col_pos = pygame.Vector2(self.rect.x, self.rect.y) + self.collision_rect_offset
         self.collision_rect.x, self.collision_rect.y = col_pos
 
     def get_position(self) -> pygame.Vector2:
@@ -83,7 +87,7 @@ class GameObject(IDrawable):
 
     def draw(self, screen: pygame.Surface):
         screen.blit(self.image, self.rect)
-        #pygame.draw.rect(screen, (0, 255, 0), self.collision_rect)
+        # pygame.draw.rect(screen, (0, 255, 0), self.collision_rect)
 
 
 

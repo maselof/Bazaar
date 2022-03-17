@@ -1,5 +1,4 @@
-from interface import *
-import interface
+import pygame
 import game_logic
 from pygame import Vector2
 from image_wrapper import ImageWrapper
@@ -95,10 +94,10 @@ class GameContainer(IDrawable):
                 self.container[i].icon.draw(screen)
 
                 message = str(self.container[i].count)
-                count_text_size = interface.get_text_size(message, game_logic.inventory_text_size)
+                count_text_size = game_logic.get_text_size(message, game_logic.inventory_text_size)
                 item_icon_size = Vector2(1, 1) * game_logic.panel_items_size
                 count_text_pos = el_pos + item_icon_size - count_text_size
-                interface.print_text(screen, message, count_text_pos.x, count_text_pos.y, font_size=game_logic.inventory_text_size)
+                game_logic.print_text(screen, message, count_text_pos.x, count_text_pos.y, font_size=game_logic.inventory_text_size)
 
         if self.show_frame:
             cell_size = Vector2(self.inv_cell_rect.size[0])

@@ -15,7 +15,7 @@ class Item(GameObject):
                  directional: bool,
                  scaling: float,
                  effects: [Effect]):
-        super().__init__(name, animations_path, size, directional, scaling)
+        super().__init__(name, animations_path, size, Vector2(0, 0), directional, scaling)
         self.effects = effects
         self.icon = ImageWrapper('res/images/icons/' + self.name + '.png')
         self.count = 1

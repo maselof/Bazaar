@@ -10,9 +10,12 @@ class ImageWrapper:
     rect: Rect
 
     def __init__(self,
-                 path: str = None):
+                 path: str = None,
+                 surface: Surface = None):
         if path:
             self.image = image.load(path)
+        elif surface:
+            self.image = surface
         else:
             self.image = Surface(0, 0)
 

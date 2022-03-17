@@ -9,6 +9,8 @@ from inventory import HeroInventory
 from copy import copy
 
 
+
+
 def remove_all_directions(queue: [Direction], direction: Direction):
     for i in range(queue.count(direction)):
         queue.remove(direction)
@@ -244,7 +246,7 @@ def run():
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
 
-    hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height))
+    hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height), game_logic.entity_collision_offset)
     hero.update()
     hero_width, hero_height = hero.image.get_size()
     center = Vector2((game_logic.g_screen_width - hero_width) // 2,
@@ -265,11 +267,16 @@ def run():
     cudgel.set_position(Vector2(700, 200))
     add_game_object(cudgel, game_map)
 
-    entity = Entity('hero', '', Vector2(30, 70))
+    church = GameObject('church', 'buildings/', Vector2(315, 320), Vector2(24, 355), False, 1) # offset 45 689
+    church.set_position(Vector2(1000, 1000))
+    add_game_object(church, game_map)
+
+    entity = Entity('skeleton', '', Vector2(30, 70), game_logic.entity_collision_offset)
     entity.set_position(Vector2(200, 200))
     entity.set_weapon(game_logic.get_item('fists'))
     entity.inventory.add_item(game_logic.get_item('cudgel'))
     entity.inventory.add_item(game_logic.get_item('heal_potion'))
+    entity.set_weapon(game_logic.get_item('cudgel'))
     add_entity(entity, game_map, game_interface)
     add_interface_element(entity.inventory)
 
@@ -283,13 +290,11 @@ def run():
         pygame.draw.rect(screen, (255, 255, 255), Rect(0, 0, game_logic.g_screen_width, game_logic.g_screen_height))
 
         game_map.update()
-        # hero.update()
         camera.update()
         game_interface.update()
 
         event(screen, hero)
         game_map.draw(screen)
-        #hero.draw(screen)
         game_interface.draw(screen)
 
         pygame.display.update()

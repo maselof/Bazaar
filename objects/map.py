@@ -3,6 +3,7 @@ from idrawable import *
 from image_wrapper import ImageWrapper
 from pygame import Vector2
 from game_object import GameObject
+from entity import Entity
 
 
 def to_frame_coordinates(point: Vector2) -> Vector2:
@@ -41,8 +42,6 @@ class MapFrame(IDrawable):
 
     def draw(self, screen: pygame.Surface):
         self.image.draw(screen)
-        for go in self.game_objects:
-            go.draw(screen)
 
 
 class Map(IDrawable):
@@ -159,15 +158,23 @@ class Map(IDrawable):
         self.all_game_objects.remove(game_object)
         self.update_visible_objects()
 
+    def check_dead(self):
+        for go in self.visible_game_objects:
+            if isinstance(go, Entity) and go.is_dead:
+                self.remove_game_object(go)
+
     def move(self, vector: pygame.Vector2):
         for map_frame in self.all_frames:
             map_frame.move(vector)
 
     def update(self):
+        self.check_dead()
         f2 = self.check_objects_transitions()
         f1 = self.check_change_frame()
         if f1 | f2:
             self.update_visible_objects()
+
+        self.visible_game_objects.sort(key=lambda go: go.collision_rect.bottom)
 
         for map_frame in self.visible_frames:
             map_frame.update()
@@ -175,3 +182,5 @@ class Map(IDrawable):
     def draw(self, screen: pygame.Surface):
         for map_frame in self.visible_frames:
             map_frame.draw(screen)
+        for go in self.visible_game_objects:
+            go.draw(screen)

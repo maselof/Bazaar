@@ -6,6 +6,7 @@ from weapon import *
 import game_cycle
 from inventory import GameContainer
 from inventory import ILootable
+from spectrum import Spectrum
 
 
 class AI:
@@ -35,6 +36,7 @@ class Entity(GameObject, ILootable):
     inventory: GameContainer
     max_hp: int
     hp: int
+    is_dead: bool
 
     weapon: Weapon
 
@@ -46,13 +48,17 @@ class Entity(GameObject, ILootable):
     ai: AI
     enable_random_actions: bool
 
+    spectra: {str: Spectrum}
+    current_spectrum: Spectrum
+
     def __init__(self,
                  name: str,
                  animations_path: str,
                  size: Vector2,
+                 collision_rect_offset: pygame.Vector2 = Vector2(0, 0),
                  scaling: float = 1
                  ):
-        super().__init__(name, animations_path, size, True, scaling)
+        super().__init__(name, animations_path, size, collision_rect_offset, True, scaling)
 
         self.speed = 3
         self.direction_vector = Vector2(0, 0)
@@ -61,6 +67,7 @@ class Entity(GameObject, ILootable):
 
         self.max_hp = 100
         self.hp = 100
+        self.is_dead = False
 
         self.weapon = game_logic.get_item('fists')
 
@@ -75,6 +82,11 @@ class Entity(GameObject, ILootable):
         self.ai.is_enemy = True
         self.ai.agro_radius = game_logic.enemy_agro_radius
 
+        self.spectra = {'get_damage': Spectrum(Vector2(self.collision_rect.size),
+                                               Vector2(self.collision_rect.x, self.collision_rect.y),
+                                               pygame.Color(255, 255, 255), 20, 250)}
+        self.current_spectrum = self.spectra.get('get_damage')
+
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
         self.actions = {'idle': Action(self.action_idle, Animation(path, 'idle', True)),
@@ -85,10 +97,12 @@ class Entity(GameObject, ILootable):
     def set_position(self, point: pygame.Vector2):
         super().set_position(point)
         self.weapon.set_position(point)
+        self.current_spectrum.surface.set_position(Vector2(self.collision_rect.x, self.collision_rect.y))
 
     def move(self, vector: pygame.Vector2):
         super().move(vector)
         self.weapon.move(vector)
+        self.current_spectrum.surface.move(vector)
 
     def action_idle(self, args: [object]):
         super().action_idle(args)
@@ -132,6 +146,11 @@ class Entity(GameObject, ILootable):
 
     def get_damage(self, damage: int):
         self.hp = max(self.hp - damage, 0)
+        self.current_spectrum = self.spectra.get('get_damage')
+        self.current_spectrum.start()
+
+    def die(self):
+        self.is_dead = True
 
     def set_weapon(self, weapon: Weapon):
         self.weapon = weapon
@@ -221,9 +240,18 @@ class Entity(GameObject, ILootable):
         self.inventory.update()
         self.update_effects()
 
+        if self.current_spectrum:
+            self.current_spectrum.update()
+
+        if self.hp == 0:
+            self.die()
+
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
         self.weapon.draw(screen)
+
+        if self.current_spectrum and not self.current_spectrum.finished:
+            self.current_spectrum.draw(screen)
 
         # attack area
         #for r in self.attack_rects:

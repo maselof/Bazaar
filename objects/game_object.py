@@ -37,7 +37,6 @@ class GameObject(IDrawable):
 
         self.rect = self.image.get_rect()
         self.collision_rect_offset = collision_rect_offset
-        print(collision_rect_offset)
         col_pos = pygame.Vector2(self.rect.x, self.rect.y) + collision_rect_offset
         self.collision_rect = pygame.Rect(col_pos.x, col_pos.y, size.x, size.y)
 

@@ -11,6 +11,8 @@ class Interface(IDrawable):
     def update(self):
         for el in self.elements:
             el.update()
+            if isinstance(el, HealthBar) and el.entity.is_dead:
+                self.elements.remove(el)
 
     def draw(self, screen: pygame.Surface):
         for el in self.elements:

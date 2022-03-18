@@ -3,6 +3,9 @@ from item import Item
 from pygame import Vector2
 from effect import Effect
 import pygame
+from location import Location
+from game_object import GameObject
+from entity import Entity
 
 
 # general
@@ -97,6 +100,38 @@ def get_item(id: str):
     if isinstance(item, Weapon):
         return Weapon(item.name, item.attack_range, item.effects, item.attack_effects)
     return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects)
+
+
+ENTITIES = {'skeleton': Entity('skeleton', '', Vector2(30, 70), entity_collision_offset, 1),
+            'bandit': Entity('bandit', '', Vector2(30, 70), entity_collision_offset, 1)}
+
+
+def get_entity(id: str):
+    entity = ENTITIES.get(id)
+    return Entity(entity.name, entity.animations_path, entity.size, entity.collision_rect_offset, entity.scaling)
+
+
+LOCATIONS = {}
+
+
+def get_location(id: int):
+    return LOCATIONS.get(id)()
+
+
+def init_locations():
+    LOCATIONS.update({0: get_bandit_camp})
+
+
+def get_bandit_camp():
+    campfire = GameObject('campfire', 'locations/', Vector2(40, 3), Vector2(5, 20), False, 1)
+    campfire.actions.get('idle').animation.speed = 0.4
+    campfire.set_position(Vector2(300, 100))
+    box = GameObject('box', 'locations/', Vector2(50, 5), Vector2(10, 20), False, 1)
+    box.set_position(Vector2(200, 300))
+    table = GameObject('table', 'locations/', Vector2(135, 20), Vector2(5, 45), False, 1)
+    table.set_position(Vector2(100, 0))
+    bandit_camp = Location([campfire, table, box], ['bandit'], Vector2(0, 0), Vector2(500, 500))
+    return bandit_camp
 
 
 def get_text_size(message, font_size=30, font_type="res/fonts/a_Alterna.ttf") -> Vector2:

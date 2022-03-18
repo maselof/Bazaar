@@ -1,14 +1,10 @@
 import sys
-
 import pygame
-
 from map import *
 import interface
 from camera import *
 from inventory import HeroInventory
 from copy import copy
-
-
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -179,11 +175,11 @@ def add_interface_element(element: IDrawable):
     game_interface.elements.sort(key=lambda el: el.priority)
 
 
-game_map = Map()
 game_interface = interface.Interface()
+game_map = Map()
 
 
-def get_collided_objects(game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
+def get_collided_visible_objects(game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
     collided = []
     for go in game_map.visible_game_objects:
         if go == game_object:
@@ -271,7 +267,7 @@ def run():
     church.set_position(Vector2(1000, 1000))
     add_game_object(church, game_map)
 
-    entity = Entity('skeleton', '', Vector2(30, 70), game_logic.entity_collision_offset)
+    entity = Entity('bandit', '', Vector2(30, 70), game_logic.entity_collision_offset)
     entity.set_position(Vector2(200, 200))
     entity.set_weapon(game_logic.get_item('fists'))
     entity.inventory.add_item(game_logic.get_item('cudgel'))

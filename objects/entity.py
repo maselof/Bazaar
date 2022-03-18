@@ -136,7 +136,7 @@ class Entity(GameObject, ILootable):
         self.direction_vector = Direction.STAND.value
         if not self.current_action.animation.finished:
             return
-        collided = game_cycle.get_collided_objects(self, self.attack_rects)
+        collided = game_cycle.get_collided_visible_objects(self, self.attack_rects)
         for go in collided:
             if isinstance(go, Entity):
                 go.get_damage(10)

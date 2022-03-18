@@ -1,9 +1,12 @@
+import game_cycle
 import game_logic
+import interface
 from idrawable import *
 from image_wrapper import ImageWrapper
 from pygame import Vector2
 from game_object import GameObject
 from entity import Entity
+import random
 
 
 def to_frame_coordinates(point: Vector2) -> Vector2:
@@ -54,6 +57,8 @@ class Map(IDrawable):
     hero: GameObject
 
     def __init__(self):
+        game_logic.init_locations()
+
         self.all_frames = [MapFrame('res/images/map/backgrounds/grass.png', Vector2(0, 0))]
         self.central_frame = self.get_frame_by_pos(Vector2(0, 0))
         self.visible_frames = []
@@ -77,6 +82,21 @@ class Map(IDrawable):
                                                               position.y * game_logic.map_frame_size.y)
         frame.set_normal_position(pos)
         self.all_frames.append(frame)
+
+        location = game_logic.get_location(0)
+        location.set_position(pos + Vector2(200, 200))
+        for go in location.objects:
+            self.add_game_object(go)
+        entities = location.spawn_entities()
+        for entity in entities:
+            while True:
+                pos = Vector2(random.randint(0, location.size.x) + location.position.x,
+                              random.randint(0, location.size.y) + location.position.y)
+                entity.set_position(pos)
+                if not self.get_collided_all_objects(entity, [entity.collision_rect]):
+                    break
+            self.add_game_object(entity)
+
         return frame
 
     def change_central_frame(self, frame: MapFrame):
@@ -93,12 +113,12 @@ class Map(IDrawable):
         new_frame_offset = Vector2(0, 0)
         central_frame_position = self.central_frame.image.get_position()
 
-        if central_frame_position.x > game_logic.g_screen_center.x:
+        if central_frame_position.x >= game_logic.g_screen_center.x:
             new_frame_offset.x = -1
         elif central_frame_position.x + game_logic.map_frame_size.x < game_logic.g_screen_center.x:
             new_frame_offset.x = 1
 
-        if central_frame_position.y > game_logic.g_screen_center.y:
+        if central_frame_position.y >= game_logic.g_screen_center.y:
             new_frame_offset.y = -1
         elif central_frame_position.y + game_logic.map_frame_size.y < game_logic.g_screen_center.y:
             new_frame_offset.y = 1
@@ -144,7 +164,7 @@ class Map(IDrawable):
             self.visible_game_objects.extend(frame.game_objects)
 
     def add_game_object(self, game_object: GameObject):
-        frame_pos = to_frame_coordinates(game_object.get_position())
+        frame_pos = to_frame_coordinates(game_object.get_position()- self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
         if not self.get_frame_by_pos(frame_pos):
             self.generate_frame(frame_pos)
 
@@ -153,7 +173,7 @@ class Map(IDrawable):
         self.update_visible_objects()
 
     def remove_game_object(self, game_object: GameObject):
-        frame_pos = to_frame_coordinates(game_object.get_position())
+        frame_pos = to_frame_coordinates(game_object.get_position() - self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
         self.get_frame_by_pos(frame_pos).game_objects.remove(game_object)
         self.all_game_objects.remove(game_object)
         self.update_visible_objects()
@@ -166,6 +186,18 @@ class Map(IDrawable):
     def move(self, vector: pygame.Vector2):
         for map_frame in self.all_frames:
             map_frame.move(vector)
+
+    def get_collided_all_objects(self, game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
+        collided = []
+        for go in self.all_game_objects:
+            if go == game_object:
+                continue
+
+            for r in area:
+                if go.collision_rect.colliderect(r):
+                    collided.append(go)
+                    break
+        return collided
 
     def update(self):
         self.check_dead()

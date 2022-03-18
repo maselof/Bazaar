@@ -1,3 +1,5 @@
+import random
+
 from weapon import Weapon
 from item import Item
 from pygame import Vector2
@@ -112,6 +114,7 @@ def get_entity(id: str):
 
 
 LOCATIONS = {}
+LOCATIONS_CHANCES = []
 
 
 def get_location(id: int):
@@ -119,7 +122,11 @@ def get_location(id: int):
 
 
 def init_locations():
-    LOCATIONS.update({0: get_bandit_camp})
+    LOCATIONS.update({0: get_bandit_camp,
+                      1: get_church,
+                      2: get_forest,
+                      3: get_meadow})
+    LOCATIONS_CHANCES.extend([10, 10, 40, 40])
 
 
 def get_bandit_camp():
@@ -132,6 +139,32 @@ def get_bandit_camp():
     table.set_position(Vector2(100, 0))
     bandit_camp = Location([campfire, table, box], ['bandit'], Vector2(0, 0), Vector2(500, 500))
     return bandit_camp
+
+
+def get_church():
+    church_building = GameObject('church', 'buildings/', Vector2(315, 320), Vector2(24, 355), False, 1)
+    church_building.set_position(Vector2(100, 50))
+    church_location = Location([church_building], ['skeleton'], Vector2(0, 0), Vector2(500, 500))
+    return church_location
+
+
+def get_forest():
+    return Location([], [], Vector2(0, 0), Vector2(0, 0))
+
+
+def get_meadow():
+    return Location([], [], Vector2(0, 0), Vector2(0, 0))
+
+
+def get_random_location() -> Location:
+    value = random.randint(0, 99)
+    id = 0
+    border = 0
+    for r in LOCATIONS_CHANCES:
+        border += r
+        if value < border:
+            return get_location(id)
+        id += 1
 
 
 def get_text_size(message, font_size=30, font_type="res/fonts/a_Alterna.ttf") -> Vector2:

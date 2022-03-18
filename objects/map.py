@@ -83,7 +83,7 @@ class Map(IDrawable):
         frame.set_normal_position(pos)
         self.all_frames.append(frame)
 
-        location = game_logic.get_location(0)
+        location = game_logic.get_random_location()
         location.set_position(pos + Vector2(200, 200))
         for go in location.objects:
             self.add_game_object(go)

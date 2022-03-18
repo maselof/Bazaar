@@ -263,10 +263,6 @@ def run():
     cudgel.set_position(Vector2(700, 200))
     add_game_object(cudgel, game_map)
 
-    church = GameObject('church', 'buildings/', Vector2(315, 320), Vector2(24, 355), False, 1) # offset 45 689
-    church.set_position(Vector2(1000, 1000))
-    add_game_object(church, game_map)
-
     entity = Entity('bandit', '', Vector2(30, 70), game_logic.entity_collision_offset)
     entity.set_position(Vector2(200, 200))
     entity.set_weapon(game_logic.get_item('fists'))

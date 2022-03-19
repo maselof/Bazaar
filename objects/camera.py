@@ -20,3 +20,12 @@ class Camera:
             if go != self.hero:
                 go.move(back_vector)
 
+                if isinstance(go, Entity):
+                    if go.ai.movement_area:
+
+                        go.ai.movement_area[0] += back_vector
+                        go.ai.movement_area[1] += back_vector
+                    if go.ai.movement_point:
+                        go.ai.movement_point.x += back_vector.x
+                        go.ai.movement_point.y += back_vector.y
+

@@ -15,6 +15,8 @@ class AI:
     counter: int
     finished: bool
 
+    movement_area: [Vector2]
+    movement_point: Vector2
     agro_radius: int
     is_enemy: bool
     is_attacking: bool
@@ -24,6 +26,9 @@ class AI:
         self.delay = 0
         self.counter = 0
         self.finished = True
+
+        self.movement_area = None
+        self.movement_point = None
         self.agro_radius = 0
         self.is_enemy = False
         self.is_attacking = False
@@ -95,6 +100,7 @@ class Entity(GameObject, ILootable):
         self.current_action = self.actions['idle']
 
     def set_position(self, point: pygame.Vector2):
+        dif_pos = point - self.get_position()
         super().set_position(point)
         self.weapon.set_position(point)
         self.current_spectrum.surface.set_position(Vector2(self.collision_rect.x, self.collision_rect.y))
@@ -165,35 +171,41 @@ class Entity(GameObject, ILootable):
                 self.effects.remove(effect)
 
     def do_random_movement(self):
+        #print(self, 'DO RANDOM MOVEMENT!!!!')
         if self.ai.finished:
-            dir1 = direction.get_random_direction()
-            dir2 = direction.get_random_direction()
-            if dir1 == dir2:
-                direction_vector = dir1.value
-            else:
-                direction_vector = dir1.value + dir2.value
+            self.ai.finished = False
 
-            if dir1 == Direction.STAND and dir2 == Direction.STAND:
-                pass
-            elif dir1 == Direction.STAND:
-                self.direction = dir2
+            if self.ai.movement_area:
+                self.ai.movement_point = Vector2(random.randint(int(self.ai.movement_area[0].x), int(self.ai.movement_area[1].x)),
+                                                 random.randint(int(self.ai.movement_area[0].y), int(self.ai.movement_area[1].y)))
             else:
-                self.direction = dir1
-
-            if direction_vector == Vector2(0, 0):
-                self.set_action('idle', None)
-            else:
-                self.set_action('walking', direction_vector)
+                self.ai.movement_point = Vector2(random.randint(-1 * game_logic.entity_movement_area_size.x // 2, 1 * game_logic.entity_movement_area_size.x // 2),
+                                                 random.randint(-1 * game_logic.entity_movement_area_size.y // 2, 1 * game_logic.entity_movement_area_size.y // 2)) + self.get_position()
 
             self.ai.duration = random.randint(60, 300)
             self.ai.delay = random.randint(60, 300)
-            self.ai.counter = 0
-            self.ai.finished = False
+
         elif self.ai.duration != 0:
             self.ai.counter += 1
             if self.ai.counter >= self.ai.duration:
                 self.ai.counter = 0
                 self.ai.duration = 0
+
+            pos_dif = self.ai.movement_point - self.get_position()
+            #print(self, pos_dif)
+            if abs(pos_dif.x) < 6 and abs(pos_dif.y) < 6:
+                self.ai.duration = 0
+                return
+
+            direction_vector = pos_dif / max(abs(pos_dif.x), abs(pos_dif.y))
+
+            if abs(direction_vector.x) > abs(direction_vector.y):
+                self.direction = Direction.RIGHT if direction_vector.x > 0 else Direction.LEFT
+            else:
+                self.direction = Direction.DOWN if direction_vector.y > 0 else Direction.UP
+
+            self.set_action('walking', direction_vector)
+
         else:
             self.set_action('idle', None)
             self.ai.counter += 1
@@ -220,11 +232,12 @@ class Entity(GameObject, ILootable):
         object, distance = game_cycle.get_nearest_object(self)
         # print(object)
         # print(distance)
-        if isinstance(object, Entity):
-            if distance <= self.ai.agro_radius:
-                self.attack_entity(object, distance)
-            else:
-                self.do_random_movement()
+        # if isinstance(object, Entity):
+        #     if distance <= self.ai.agro_radius:
+        #         self.attack_entity(object, distance)
+        #     else:
+        #         self.do_random_movement()
+        self.do_random_movement()
 
     def update(self):
         super().update()
@@ -246,6 +259,8 @@ class Entity(GameObject, ILootable):
         if self.hp == 0:
             self.die()
 
+        #print(self, self.ai.movement_area, self.ai.movement_point)
+
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
         self.weapon.draw(screen)
@@ -256,3 +271,6 @@ class Entity(GameObject, ILootable):
         # attack area
         #for r in self.attack_rects:
         #    pygame.draw.rect(screen, pygame.Color(255, 0, 0, 250), r)
+        # if self.ai.movement_area:
+        #     size = self.ai.movement_area[1] - self.ai.movement_area[0]
+        #     pygame.draw.rect(screen, pygame.Color(0, 255, 0), Rect(self.ai.movement_area[0].x, self.ai.movement_area[0].y, size.x, size.y))

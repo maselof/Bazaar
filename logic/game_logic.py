@@ -33,6 +33,7 @@ g_entity_walking_anim_speed = 0.2
 g_entity_attacking_anim_speed = 0.2
 enemy_agro_radius = 100
 entity_collision_offset = Vector2(60, 40)
+entity_movement_area_size = Vector2(500, 500)
 
 # other
 potion_hp = 20
@@ -144,7 +145,7 @@ def get_bandit_camp():
 def get_church():
     church_building = GameObject('church', 'buildings/', Vector2(315, 320), Vector2(24, 355), False, 1)
     church_building.set_position(Vector2(100, 50))
-    church_location = Location([church_building], ['skeleton'], Vector2(0, 0), Vector2(500, 500))
+    church_location = Location([church_building], ['skeleton'], Vector2(0, 0), Vector2(800, 1000))
     return church_location
 
 

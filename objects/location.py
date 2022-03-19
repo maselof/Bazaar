@@ -25,6 +25,9 @@ class Location(IDrawable):
         for go in self.objects:
             go.move(position)
 
+    def move(self, vector: Vector2):
+        self.position += vector
+
     def get_position(self):
         return self.position
 
@@ -42,3 +45,5 @@ class Location(IDrawable):
 
     def draw(self, screen: pygame.Surface):
         pass
+        #pygame.draw.rect(screen, (0, 255, 0), Rect(self.position.x, self.position.y, self.size.x, self.size.y))
+        # print(self.position, self.size)

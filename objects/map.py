@@ -7,6 +7,7 @@ from pygame import Vector2
 from game_object import GameObject
 from entity import Entity
 import random
+from location import Location
 
 
 def to_frame_coordinates(point: Vector2) -> Vector2:
@@ -56,9 +57,11 @@ class Map(IDrawable):
     visible_game_objects: [GameObject]
     hero: GameObject
 
+    locations: [Location]
+
     def __init__(self):
         game_logic.init_locations()
-
+        self.locations = []
         self.all_frames = [MapFrame('res/images/map/backgrounds/grass.png', Vector2(0, 0))]
         self.central_frame = self.get_frame_by_pos(Vector2(0, 0))
         self.visible_frames = []
@@ -84,7 +87,15 @@ class Map(IDrawable):
         self.all_frames.append(frame)
 
         location = game_logic.get_random_location()
-        location.set_position(pos + Vector2(200, 200))
+        while True:
+            location_pos = pos + Vector2(random.randint(0, game_logic.map_frame_size.x),
+                                         random.randint(0, game_logic.map_frame_size.y))
+            location.set_position(location_pos)
+            for go in location.objects:
+                if self.get_collided_all_objects(go, [go.collision_rect]):
+                    continue
+            break
+
         for go in location.objects:
             self.add_game_object(go)
         entities = location.spawn_entities()
@@ -95,7 +106,10 @@ class Map(IDrawable):
                 entity.set_position(pos)
                 if not self.get_collided_all_objects(entity, [entity.collision_rect]):
                     break
+            entity.ai.movement_area = [Vector2(location.position), Vector2(location.position + location.size)]
             self.add_game_object(entity)
+
+        self.locations.append(location)
 
         return frame
 
@@ -184,6 +198,8 @@ class Map(IDrawable):
                 self.remove_game_object(go)
 
     def move(self, vector: pygame.Vector2):
+        for location in self.locations:
+            location.move(vector)
         for map_frame in self.all_frames:
             map_frame.move(vector)
 
@@ -208,11 +224,16 @@ class Map(IDrawable):
 
         self.visible_game_objects.sort(key=lambda go: go.collision_rect.bottom)
 
+        for location in self.locations:
+            location.update()
+
         for map_frame in self.visible_frames:
             map_frame.update()
 
     def draw(self, screen: pygame.Surface):
         for map_frame in self.visible_frames:
             map_frame.draw(screen)
+        for location in self.locations:
+            location.draw(screen)
         for go in self.visible_game_objects:
             go.draw(screen)

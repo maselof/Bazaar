@@ -3,6 +3,7 @@ from entity import *
 from inventory import HeroInventory
 from inventory import ILootable
 from context import Context
+from chest import Chest
 
 
 class Hero(Entity):
@@ -55,15 +56,13 @@ class Hero(Entity):
         if context == Context.GAME:
             self.inventory.close()
             if self.looting_object:
-                self.looting_object.inventory.close()
+                self.looting_object.close()
         elif context == Context.INVENTORY:
-            self.inventory.is_open = True
-            self.inventory.show_frame = True
+            self.inventory.open()
             if self.looting_object:
                 self.looting_object.inventory.show_frame = False
         elif context == Context.LOOTING:
-            self.looting_object.inventory.is_open = True
-            self.looting_object.inventory.show_frame = True
+            self.looting_object.open()
             self.inventory.show_frame = False
         self.context = context
 
@@ -71,13 +70,14 @@ class Hero(Entity):
         object, distance = game_cycle.get_nearest_object(self)
         if distance > self.interact_radius:
             object = None
+            # return
 
         print(object)
         if isinstance(object, Item):
             self.inventory.add_item(object)
             game_cycle.game_map.remove_game_object(object)
-        elif isinstance(object, Entity):
-            if (self.looting_object != None) and self.looting_object.inventory.is_open:
+        elif isinstance(object, Chest):
+            if (self.looting_object is not None) and self.looting_object.inventory.is_open:
                 self.looting_object.inventory.close()
                 if self.inventory.is_open:
                     self.change_context(Context.INVENTORY)

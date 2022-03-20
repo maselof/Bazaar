@@ -5,6 +5,7 @@ import interface
 from camera import *
 from inventory import HeroInventory
 from copy import copy
+from chest import Chest
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -214,7 +215,7 @@ def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
 
 
 def get_distance(object1: GameObject, object2: GameObject):
-    return object1.get_position().distance_to(object2.get_position())
+    return object1.get_center().distance_to(object2.get_center())
 
 
 def check_collisions(game_object: GameObject, vector: Vector2) -> Vector2:
@@ -271,6 +272,11 @@ def run():
     entity.set_weapon(game_logic.get_item('cudgel'))
     add_entity(entity, game_map, game_interface)
     add_interface_element(entity.inventory)
+
+    chest = Chest('chest', 'general/', Vector2(58, 5), Vector2(1, 25))
+    chest.set_position(Vector2(500, 500))
+    add_interface_element(chest.inventory)
+    add_game_object(chest, game_map)
 
     camera = Camera(game_map, hero)
     dialog_window = interface.DialogWindow(hero)

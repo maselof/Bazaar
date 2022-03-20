@@ -5,12 +5,84 @@ from image_wrapper import ImageWrapper
 from idrawable import IDrawable
 
 
+class DescriptionWindow(IDrawable):
+    bg_pos: Vector2
+    size: Vector2
+    item: game_logic.Item
+    icon_frame: ImageWrapper
+
+    def __init__(self):
+        self.size = game_logic.dscw_size
+        self.bg_pos = Vector2((game_logic.g_screen_width - self.size.x) // 2, game_logic.inventory_top_offset)
+        self.icon_frame = ImageWrapper(path='res/images/interface/inventory/inv_cell.png')
+
+    def update(self):
+        pass
+
+    def draw_description(self, screen: pygame.Surface, description: str, pos: Vector2, max_width: int, font_size: int):
+        words = description.split()
+        space_size = game_logic.get_text_size(' ', font_size)
+        current_width = 0
+        for word in words:
+            word_size = game_logic.get_text_size(word, font_size)
+            if current_width + word_size.x > max_width:
+                current_width = 0
+                pos.y += space_size.y
+            game_logic.print_text(screen, word, pos.x + current_width, pos.y, game_logic.dw_text_color, font_size=font_size)
+            current_width += word_size.x + space_size.x
+
+    def draw(self, screen: pygame.Surface):
+        if not self.item:
+            return
+
+        pygame.draw.rect(screen, game_logic.inventory_background_color, pygame.Rect(self.bg_pos.x, self.bg_pos.y,
+                                                                                    self.size.x, self.size.y))
+
+        text_name = self.item.name
+        text_name_size = game_logic.get_text_size(text_name, game_logic.dw_text_size)
+        text_name_pos = self.bg_pos + Vector2((self.size.x - text_name_size.x) // 2, 0)
+        game_logic.print_text(screen, text_name, text_name_pos.x, text_name_pos.y, game_logic.dw_text_color, font_size=game_logic.dw_text_size)
+
+        second_layer_size = self.size - Vector2(2 * game_logic.dw_layers_offset, text_name_size.y + game_logic.dw_layers_offset)
+        second_layer_pos = self.bg_pos + Vector2(game_logic.dw_layers_offset, text_name_size.y)
+        pygame.draw.rect(screen, game_logic.dw_second_layer_color, pygame.Rect(second_layer_pos.x, second_layer_pos.y,
+                                                                               second_layer_size.x, second_layer_size.y))
+
+        self.icon_frame.set_position(second_layer_pos)
+        self.icon_frame.draw(screen)
+        icon = ImageWrapper(surface=self.item.icon.image.copy())
+        icon.set_position(second_layer_pos + Vector2(1, 1) * game_logic.dscw_frame_icon_offset)
+        icon.draw(screen)
+
+        description = self.item.description
+        description_pos = second_layer_pos + Vector2(game_logic.dscw_frame_icon_offset * 2 + game_logic.panel_items_size, 0) + Vector2(1, 1) * game_logic.dscw_description_offset
+        max_width = int(second_layer_pos.x + second_layer_size.x - description_pos.x)
+        self.draw_description(screen, description, description_pos, max_width, game_logic.dscw_description_text_size)
+
+        stats_pos = second_layer_pos + Vector2(0, game_logic.dscw_frame_icon_offset * 2 + game_logic.panel_items_size) + Vector2(1, 1) * game_logic.dscw_description_offset
+        stats_right_border = second_layer_pos.x + second_layer_size.x - game_logic.dscw_description_offset
+        symbol_height = game_logic.get_text_size('A', game_logic.dscw_stats_text_size).y
+        for effect in self.item.effects:
+            game_logic.print_text(screen, effect.name, stats_pos.x, stats_pos.y, game_logic.dw_text_color, font_size=game_logic.dscw_stats_text_size)
+            value = str(effect.value)
+            value_pos = Vector2(stats_right_border - game_logic.get_text_size(value, game_logic.dscw_stats_text_size).x, stats_pos.y)
+            game_logic.print_text(screen, value, value_pos.x, value_pos.y, game_logic.dw_text_color, font_size=game_logic.dscw_stats_text_size)
+            stats_pos.y += symbol_height
+
+        cost_text_pos = second_layer_pos + Vector2(0, second_layer_size.y - symbol_height) + Vector2(1, -1) * game_logic.dscw_description_offset
+        game_logic.print_text(screen, 'Value', cost_text_pos.x, cost_text_pos.y, game_logic.dscw_cost_text_color, font_size=game_logic.dscw_stats_text_size)
+        cost = str(self.item.cost)
+        cost_pos = Vector2(stats_right_border - game_logic.get_text_size(cost, game_logic.dscw_stats_text_size).x, cost_text_pos.y)
+        game_logic.print_text(screen, cost, cost_pos.x, cost_pos.y, game_logic.dscw_cost_text_color, font_size=game_logic.dscw_stats_text_size)
+
+
 class GameContainer(IDrawable):
     container: [game_logic.Item]
     bg_pos: Vector2
     is_open: bool
     show_frame: bool
     focus_item_index: int
+    description_window: DescriptionWindow
 
     def __init__(self):
         self.container = []
@@ -24,10 +96,15 @@ class GameContainer(IDrawable):
         self.bg_pos = Vector2(game_logic.g_screen_width - self.inv_cell_rect.size[0] * game_logic.inventory_columns_count, 0) + \
                       Vector2(-1, 1) * game_logic.inventory_top_offset
         self.priority = game_logic.inventory_priority
+        self.description_window = DescriptionWindow()
 
     def close(self):
         self.is_open = False
         self.show_frame = False
+
+    def open(self):
+        self.is_open = True
+        self.show_frame = True
 
     def change_focus_item(self, index: int):
         new_index = self.focus_item_index + index
@@ -67,6 +144,7 @@ class GameContainer(IDrawable):
         for item in self.container:
             if item.count <= 0:
                 self.container.remove(item)
+        self.description_window.update()
 
     def draw(self, screen: pygame.Surface):
         if not self.is_open:
@@ -105,6 +183,14 @@ class GameContainer(IDrawable):
                                                                                                       (self.focus_item_index // 5) * cell_size.y)
             self.frame_img.set_position(frame_pos)
             self.frame_img.draw(screen)
+
+        if not self.show_frame:
+            self.description_window.item = None
+        else:
+            self.description_window.item = self.get_focus_item()
+
+        self.description_window.draw(screen)
+
 
 
 class HeroInventory(GameContainer):

@@ -95,9 +95,9 @@ class Map(IDrawable):
                 if self.get_collided_all_objects(go, [go.collision_rect]):
                     continue
             break
-
         for go in location.objects:
             self.add_game_object(go)
+
         entities = location.spawn_entities()
         for entity in entities:
             while True:

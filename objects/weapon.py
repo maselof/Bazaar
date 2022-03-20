@@ -13,8 +13,10 @@ class Weapon(Item):
                  name: str,
                  attack_range: float,
                  hero_effects: [Effect],
-                 attack_effects: [Effect]):
-        super().__init__(name, 'weapons/', Vector2(0, 0), True, 1, hero_effects)
+                 attack_effects: [Effect],
+                 cost: int,
+                 description: str):
+        super().__init__(name, 'weapons/', Vector2(0, 0), True, 1, hero_effects, cost, description)
         self.attack_range = attack_range
         self.attack_effects = attack_effects
 

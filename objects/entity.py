@@ -100,7 +100,6 @@ class Entity(GameObject, ILootable):
         self.current_action = self.actions['idle']
 
     def set_position(self, point: pygame.Vector2):
-        dif_pos = point - self.get_position()
         super().set_position(point)
         self.weapon.set_position(point)
         self.current_spectrum.surface.set_position(Vector2(self.collision_rect.x, self.collision_rect.y))
@@ -171,7 +170,6 @@ class Entity(GameObject, ILootable):
                 self.effects.remove(effect)
 
     def do_random_movement(self):
-        #print(self, 'DO RANDOM MOVEMENT!!!!')
         if self.ai.finished:
             self.ai.finished = False
 
@@ -192,7 +190,6 @@ class Entity(GameObject, ILootable):
                 self.ai.duration = 0
 
             pos_dif = self.ai.movement_point - self.get_position()
-            #print(self, pos_dif)
             if abs(pos_dif.x) < 6 and abs(pos_dif.y) < 6:
                 self.ai.duration = 0
                 return
@@ -213,31 +210,23 @@ class Entity(GameObject, ILootable):
                 self.ai.finished = True
 
     def attack_entity(self, entity, distance: int):
-        # print('attacking!')
         if distance > self.weapon.attack_range:
-            pos_dif = entity.get_position() - self.get_position()
-            dir1 = Direction.LEFT if pos_dif.x < 0 else Direction.RIGHT
-            dir2 = Direction.UP if pos_dif.y < 0 else Direction.DOWN
-            direction_vector = dir1.value + dir2.value
-
-            if abs(pos_dif.x) > abs(pos_dif.y):
-                self.direction = dir1
+            pos_dif = entity.get_center() - self.get_center()
+            direction_vector = pos_dif / max(abs(pos_dif.x), abs(pos_dif.y))
+            if abs(direction_vector.x) > abs(direction_vector.y):
+                self.direction = Direction.RIGHT if direction_vector.x > 0 else Direction.LEFT
             else:
-                self.direction = dir2
+                self.direction = Direction.DOWN if direction_vector.y > 0 else Direction.UP
             self.set_action('walking', direction_vector)
         else:
             self.set_action('attacking', None)
 
     def do_ai(self):
         object, distance = game_cycle.get_nearest_object(self)
-        # print(object)
-        # print(distance)
-        # if isinstance(object, Entity):
-        #     if distance <= self.ai.agro_radius:
-        #         self.attack_entity(object, distance)
-        #     else:
-        #         self.do_random_movement()
-        self.do_random_movement()
+        if isinstance(object, Entity) and self.ai.is_enemy != object.ai.is_enemy and distance <= self.ai.agro_radius:
+            self.attack_entity(object, distance)
+        else:
+            self.do_random_movement()
 
     def update(self):
         super().update()
@@ -259,8 +248,6 @@ class Entity(GameObject, ILootable):
         if self.hp == 0:
             self.die()
 
-        #print(self, self.ai.movement_area, self.ai.movement_point)
-
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
         self.weapon.draw(screen)
@@ -268,9 +255,8 @@ class Entity(GameObject, ILootable):
         if self.current_spectrum and not self.current_spectrum.finished:
             self.current_spectrum.draw(screen)
 
-        # attack area
-        #for r in self.attack_rects:
-        #    pygame.draw.rect(screen, pygame.Color(255, 0, 0, 250), r)
+        # pygame.draw.circle(screen, (0, 255, 0), self.collision_rect.center, self.ai.agro_radius)
+
         # if self.ai.movement_area:
         #     size = self.ai.movement_area[1] - self.ai.movement_area[0]
         #     pygame.draw.rect(screen, pygame.Color(0, 255, 0), Rect(self.ai.movement_area[0].x, self.ai.movement_area[0].y, size.x, size.y))

@@ -37,6 +37,7 @@ class Location(IDrawable):
             entity = game_logic.get_entity(id)
             hp_bar = HealthBar(entity)
             game_cycle.add_interface_element(hp_bar)
+            game_cycle.add_interface_element(entity.inventory)
             entities.append(entity)
         return entities
 

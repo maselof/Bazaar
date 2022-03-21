@@ -1,3 +1,4 @@
+import game_logic
 from inventory import *
 from hero import *
 
@@ -91,12 +92,42 @@ class HealthBar(IDrawable):
         self.__frame.set_position(pos)
         self.__band.set_position(pos)
 
-        percent = max(self.entity.hp / self.entity.max_hp, 0)
+        percent = max(self.entity.stats.hp / self.entity.stats.max_hp, 0)
         self.__band.set_size(pygame.Vector2(self.__initial_band_size * percent, self.__band.get_size().y))
 
     def draw(self, screen: pygame.Surface):
         screen.blit(self.__frame.image, self.__frame.rect)
         screen.blit(self.__band.image, self.__band.rect)
+
+
+class HeroBars(IDrawable):
+    hero: Hero
+
+    def __init__(self,
+                 hero: Hero):
+        self.hero = hero
+        self.priority = game_logic.hero_bars_priority
+
+    def update(self):
+        pass
+
+    def draw_bar(self, screen: pygame.Surface, max: int, current: int, pos: Vector2, color):
+        pygame.draw.rect(screen, game_logic.hb_frame_color, Rect(pos.x, pos.y, game_logic.hb_bar_size.x, game_logic.hb_bar_size.y))
+        bar_size = Vector2(int(game_logic.hb_bar_size.x * current / max), game_logic.hb_bar_size.y)
+        pygame.draw.rect(screen, color, Rect(pos.x, pos.y, bar_size.x, bar_size.y))
+
+        text_pos = pos + Vector2(game_logic.hb_bar_size.x, 0)
+        text = f'{current}/{max}'
+        game_logic.print_text(screen, text, text_pos.x, text_pos.y, game_logic.hb_text_color, font_size=game_logic.hb_text_size)
+
+    def draw(self, screen: pygame.Surface):
+        bar_pos = Vector2(game_logic.g_screen_width - game_logic.hb_right_offset - game_logic.hb_bar_size.x,
+                          game_logic.g_screen_height - game_logic.hb_bottom_offset - game_logic.hb_bar_size.y)
+        self.draw_bar(screen, self.hero.stats.max_mana, self.hero.stats.mana, bar_pos, game_logic.hb_mana_color)
+        bar_pos.y -= game_logic.hb_bar_size.y + game_logic.hb_bars_offset
+        self.draw_bar(screen, self.hero.stats.max_stamina, self.hero.stats.stamina, bar_pos, game_logic.hb_stamina_color)
+        bar_pos.y -= game_logic.hb_bar_size.y + game_logic.hb_bars_offset
+        self.draw_bar(screen, self.hero.stats.max_hp, self.hero.stats.hp, bar_pos, game_logic.hb_health_color)
 
 
 class Button:

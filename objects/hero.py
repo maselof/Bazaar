@@ -46,10 +46,29 @@ class Hero(Entity):
             self.effects.append(effect)
             effect.start()
         if isinstance(item, Weapon):
-            old_weapon = self.weapon
-            self.set_weapon(item)
+            new_weapon = game_logic.get_item(item.name)
+            new_weapon.set_equipped(item.is_equipped)
+            new_weapon.bottom_panel_index = item.bottom_panel_index
+            item.bottom_panel_index = 0
+            old_weapon = game_logic.get_item(self.weapon.name)
+            old_weapon.bottom_panel_index = self.weapon.bottom_panel_index
             if old_weapon.name != 'fists':
                 self.inventory.add_item(old_weapon)
+                old_weapon.set_equipped(True)
+                self.inventory.remove_item(old_weapon)
+            if not new_weapon.is_equipped:
+                print('not equipped')
+                self.inventory.remove_item(new_weapon)
+                new_weapon.set_equipped(True)
+                self.inventory.add_item(new_weapon)
+                self.set_weapon(new_weapon)
+            else:
+                print('equipped')
+                self.inventory.remove_item(new_weapon)
+                self.set_weapon(game_logic.get_item('fists'))
+            self.inventory.update_panel()
+            return
+
         self.inventory.remove_item(item)
 
     def change_context(self, context: Context):

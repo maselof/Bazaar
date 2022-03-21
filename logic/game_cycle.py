@@ -95,11 +95,15 @@ def event(screen, hero: Hero):
                     focus_item = hero.inventory.get_focus_item()
                     if focus_item:
                         if hero.looting_object and hero.looting_object.inventory.is_open:
+                            if isinstance(focus_item, Weapon) and focus_item.is_equipped:
+                                continue
                             hero.inventory.remove_item(focus_item)
                             print('GIVE ' + focus_item.name)
                             hero.looting_object.inventory.add_item(game_logic.get_item(focus_item.name))
                         else:
                             hero.use(focus_item)
+                elif game_logic.NUMBER_KEYS.get(event.key) is not None:
+                    hero.inventory.set_panel_index(hero.inventory.get_focus_item(), game_logic.NUMBER_KEYS.get(event.key) + 1)
 
             elif hero.context == Context.LOOTING:
                 if event.key == pygame.K_UP:
@@ -119,6 +123,11 @@ def event(screen, hero: Hero):
                         hero.looting_object.inventory.remove_item(looted_item)
                         print('GET ' + looted_item.name)
                         hero.inventory.add_item(game_logic.get_item(looted_item.name))
+            elif hero.context == Context.GAME:
+                if game_logic.NUMBER_KEYS.get(event.key) is not None:
+                    item = hero.inventory.inventory_panel[game_logic.NUMBER_KEYS.get(event.key)]
+                    if item:
+                        hero.use(item)
 
             # other
             if event.key == pygame.K_r:
@@ -128,7 +137,7 @@ def event(screen, hero: Hero):
             elif event.key == pygame.K_SPACE:
                 hero.set_action('attacking', None)
             elif event.key == pygame.K_f:
-                hero.hp -= 10
+                hero.stats.hp -= 10
             elif event.key == pygame.K_e:
                 hero.interact()
             elif event.key == pygame.K_TAB:
@@ -249,7 +258,7 @@ def run():
     center = Vector2((game_logic.g_screen_width - hero_width) // 2,
                      (game_logic.g_screen_height - hero_height) // 2)
     hero.set_position(center)
-    add_interface_element(interface.HealthBar(hero))
+    add_interface_element(interface.HeroBars(hero))
     add_interface_element(hero.inventory)
     hero_weapon = game_logic.get_item('fists')
     hero.set_weapon(hero_weapon)
@@ -263,6 +272,14 @@ def run():
     cudgel = game_logic.get_item('cudgel')
     cudgel.set_position(Vector2(700, 200))
     add_game_object(cudgel, game_map)
+
+    cudgel = game_logic.get_item('cudgel')
+    cudgel.set_position(Vector2(800, 200))
+    add_game_object(cudgel, game_map)
+
+    sword = game_logic.get_item('sword')
+    sword.set_position(Vector2(750, 200))
+    add_game_object(sword, game_map)
 
     entity = Entity('bandit', '', Vector2(30, 70), game_logic.entity_collision_offset)
     entity.set_position(Vector2(200, 200))

@@ -9,6 +9,7 @@ class Item(GameObject):
     count: int
     cost: int
     description: str
+    bottom_panel_index: int
 
     def __init__(self,
                  name: str,
@@ -21,9 +22,13 @@ class Item(GameObject):
                  description: str):
         super().__init__(name, animations_path, size, Vector2(0, 0), directional, scaling)
         self.effects = effects
-        self.icon = ImageWrapper('res/images/icons/' + self.name + '.png')
         self.count = 1
         self.cost = cost
         self.description = description
+        self.icons_init(animations_path)
+        self.bottom_panel_index = 0
+
+    def icons_init(self, icons_path: str):
+        self.icon = ImageWrapper('res/images/icons/' + icons_path + self.name + '.png')
 
 

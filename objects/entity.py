@@ -34,13 +34,31 @@ class AI:
         self.is_attacking = False
 
 
+class Stats:
+    max_hp: int
+    hp: int
+    max_stamina: int
+    stamina: int
+    max_mana: int
+    mana: int
+
+    def __init__(self):
+        self.max_hp = 100
+        self.hp = self.max_hp
+        self.max_stamina = 100
+        self.stamina = self.max_stamina
+        self.max_mana = 100
+        self.mana = self.max_mana
+
+
 class Entity(GameObject, ILootable):
     speed: int
     direction_vector: Vector2
     left_flip: bool
     inventory: GameContainer
-    max_hp: int
-    hp: int
+
+    stats: Stats
+
     is_dead: bool
 
     weapon: Weapon
@@ -70,8 +88,7 @@ class Entity(GameObject, ILootable):
         self.left_flip = False
         self.direction = Direction.LEFT
 
-        self.max_hp = 100
-        self.hp = 100
+        self.stats = Stats()
         self.is_dead = False
 
         self.weapon = game_logic.get_item('fists')
@@ -150,7 +167,7 @@ class Entity(GameObject, ILootable):
                     go.effects.append(effect)
 
     def get_damage(self, damage: int):
-        self.hp = max(self.hp - damage, 0)
+        self.stats.hp = max(self.stats.hp - damage, 0)
         self.current_spectrum = self.spectra.get('get_damage')
         self.current_spectrum.start()
 
@@ -245,7 +262,7 @@ class Entity(GameObject, ILootable):
         if self.current_spectrum:
             self.current_spectrum.update()
 
-        if self.hp == 0:
+        if self.stats.hp == 0:
             self.die()
 
     def draw(self, screen: pygame.Surface):

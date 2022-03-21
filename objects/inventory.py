@@ -3,6 +3,7 @@ import game_logic
 from pygame import Vector2
 from image_wrapper import ImageWrapper
 from idrawable import IDrawable
+from weapon import Weapon
 
 
 class DescriptionWindow(IDrawable):
@@ -115,6 +116,8 @@ class GameContainer(IDrawable):
         print(f'New focus index: {new_index}')
         if self.get_focus_item():
             print(f'Focus item: {self.get_focus_item().name}')
+            if isinstance(self.get_focus_item(), Weapon):
+                print(self.get_focus_item().is_equipped)
         else:
             print('Focus item is null')
 
@@ -131,13 +134,25 @@ class GameContainer(IDrawable):
     def add_item(self, item: game_logic.Item):
         for i in self.container:
             if i.name == item.name:
+                if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
+                    print(item.is_equipped, i.is_equipped)
+                    continue
                 i.count += 1
+                if item.bottom_panel_index != 0:
+                    i.bottom_panel_index = item.bottom_panel_index
                 return
-        self.container.append(game_logic.get_item(item.name))
+        new_item = game_logic.get_item(item.name)
+        new_item.bottom_panel_index = item.bottom_panel_index
+        if isinstance(new_item, Weapon):
+            new_item.set_equipped(item.is_equipped)
+        self.container.append(new_item)
 
     def remove_item(self, item: game_logic.Item):
         for i in self.container:
             if i.name == item.name:
+                if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
+                    print(item.is_equipped, i.is_equipped)
+                    continue
                 i.count -= 1
 
     def update(self):
@@ -171,11 +186,15 @@ class GameContainer(IDrawable):
                 self.container[i].icon.set_position(el_pos)
                 self.container[i].icon.draw(screen)
 
-                message = str(self.container[i].count)
-                count_text_size = game_logic.get_text_size(message, game_logic.inventory_text_size)
+                count = str(self.container[i].count)
+                count_text_size = game_logic.get_text_size(count, game_logic.inventory_text_size)
                 item_icon_size = Vector2(1, 1) * game_logic.panel_items_size
                 count_text_pos = el_pos + item_icon_size - count_text_size
-                game_logic.print_text(screen, message, count_text_pos.x, count_text_pos.y, font_size=game_logic.inventory_text_size)
+                game_logic.print_text(screen, count, count_text_pos.x, count_text_pos.y, game_logic.panel_count_color, font_size=game_logic.inventory_text_size)
+
+                bpi = self.container[i].bottom_panel_index
+                if bpi > 0:
+                    game_logic.print_text(screen, str(bpi), el_pos.x, el_pos.y, game_logic.panel_number_color, font_size=game_logic.inventory_text_size)
 
         if self.show_frame:
             cell_size = Vector2(self.inv_cell_rect.size[0])
@@ -192,22 +211,46 @@ class GameContainer(IDrawable):
         self.description_window.draw(screen)
 
 
-
 class HeroInventory(GameContainer):
     inventory_panel = [game_logic.Item]
 
     def __init__(self):
         super().__init__()
-        self.inventory_panel = []
+        self.inventory_panel = [None for i in range(game_logic.panel_items_count)]
         self.ip_image = pygame.image.load('res/images/interface/inventory/items_panel.png')
         ip_w, ip_h = self.ip_image.get_size()
         self.ip_rect = pygame.Rect((game_logic.g_screen_width - ip_w) // 2,
                                    game_logic.g_screen_height - ip_h - game_logic.panel_bottom_offset, 0, 0)
         self.bg_pos = Vector2(game_logic.inventory_top_offset, game_logic.inventory_top_offset)
 
+    def update(self):
+        super().update()
+        for i in range(len(self.inventory_panel)):
+            if self.inventory_panel[i] and self.inventory_panel[i].count == 0:
+                self.inventory_panel[i] = None
+
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
         self.draw_inventory_panel(screen)
+
+    def update_panel(self):
+        self.inventory_panel = [None for i in range(game_logic.panel_items_count)]
+        for i in self.container:
+            print(i.name, i.bottom_panel_index, i.count)
+            if i.bottom_panel_index > 0 and i.count > 0:
+                self.inventory_panel[i.bottom_panel_index - 1] = i
+
+    def set_panel_index(self, item: game_logic.Item, index: int):
+        for i in self.container:
+            if i.bottom_panel_index == index:
+                i.bottom_panel_index = item.bottom_panel_index
+
+        if item.bottom_panel_index == index:
+            item.bottom_panel_index = 0
+        else:
+            item.bottom_panel_index = index
+
+        self.update_panel()
 
     def draw_inventory_panel(self, screen):
         screen.blit(self.ip_image, self.ip_rect)
@@ -215,8 +258,17 @@ class HeroInventory(GameContainer):
         first_el_pos = ip_pos + Vector2(game_logic.panel_items_offset, game_logic.panel_items_offset)
         for i in range(len(self.inventory_panel)):
             el_pos = first_el_pos + Vector2(i * (game_logic.panel_items_size + game_logic.panel_items_offset), 0)
-            self.inventory_panel[i].icon.set_position(el_pos)
-            self.inventory_panel[i].icon.draw(screen)
+            item = self.inventory_panel[i]
+            if item:
+                icon = ImageWrapper(surface=item.icon.image.copy())
+                icon.set_position(el_pos)
+                icon.draw(screen)
+                count = str(item.count)
+                count_pos = el_pos + Vector2(1, 1) * game_logic.panel_items_size - game_logic.get_text_size(count, game_logic.panel_text_size) - Vector2(1, 0) * game_logic.panel_text_offset
+                game_logic.print_text(screen, count, count_pos.x, count_pos.y, game_logic.panel_count_color, font_size=game_logic.panel_text_size)
+            number = str((i + 1) % 10)
+            number_pos = el_pos + Vector2(1, 0) * game_logic.panel_text_offset
+            game_logic.print_text(screen, number, number_pos.x, number_pos.y, game_logic.panel_number_color, font_size=game_logic.panel_text_size)
 
 
 class ILootable:

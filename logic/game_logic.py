@@ -53,6 +53,10 @@ panel_items_count = 10
 panel_bottom_offset = 30
 panel_items_offset = 11
 panel_items_size = 56
+panel_number_color = (232, 180, 0)
+panel_count_color = (255, 255, 255)
+panel_text_size = 16
+panel_text_offset = 2
 
 # Dialog window
 dw_first_layer_color = (152, 94, 63)
@@ -76,19 +80,37 @@ dscw_cost_text_color = (232, 180, 0)
 hp_bar_priority = 1
 inventory_priority = 2
 dialog_window_priority = 2
+hero_bars_priority = 2
+
+# hero bars
+hb_right_offset = 100
+hb_bottom_offset = 50
+hb_bar_size = Vector2(250, 15)
+hb_health_color = (255, 0, 0)
+hb_stamina_color = (0, 255, 0)
+hb_mana_color = (0, 0, 255)
+hb_frame_color = (0, 0, 0)
+hb_bars_offset = 5
+hb_text_size = 15
+hb_text_color = (232, 180, 0)
 
 # map
 map_frame_size = Vector2(1680, 1050)
+
+# keys
+
+NUMBER_KEYS = {pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3, pygame.K_5: 4,
+               pygame.K_6: 5, pygame.K_7: 6, pygame.K_8: 7, pygame.K_9: 8, pygame.K_0: 9}
 
 # effect funcs:
 
 
 def healing(entity: object, value: float):
-    entity.hp += int(value)
+    entity.stats.hp += int(value)
 
 
 def bleeding(entity: object, value: float):
-    entity.hp -= int(value)
+    entity.stats.hp -= int(value)
 
 
 EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 10),
@@ -104,7 +126,8 @@ def get_effect(id: str) -> Effect:
 ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20,
                              'Weak healing potion. Increase your hp on 10 points.'),
          'fists': Weapon('fists', 40, [], [], 0, ''),
-         'cudgel': Weapon('cudgel', 80, [], [], 100, 'The most common weapon among bandits.')}
+         'cudgel': Weapon('cudgel', 80, [], [], 100, 'The most common weapon among bandits.'),
+         'sword': Weapon('sword', 120, [], [], 250, 'Some description.')}
 
 
 def get_item(id: str):

@@ -106,6 +106,8 @@ class Hero(Entity):
         elif context == Context.LOOTING:
             self.looting_object.open()
             self.inventory.show_frame = False
+        elif context == Context.SKILLS:
+            pass
         self.context = context
 
     def interact(self):
@@ -114,7 +116,7 @@ class Hero(Entity):
             object = None
             # return
 
-        print(object)
+        # print(object)
         if isinstance(object, Item):
             self.inventory.add_item(object, object.count)
             game_cycle.game_map.remove_game_object(object)
@@ -137,6 +139,7 @@ class Hero(Entity):
         self.stats.exp += exp
         while self.stats.exp >= self.stats.max_exp:
             self.stats.lvl += 1
+            self.stats.skill_points += 1
             self.stats.exp -= self.stats.max_exp
             self.stats.max_exp += game_logic.exp_gain
 

@@ -40,6 +40,18 @@ enemy_agro_radius = 300
 entity_collision_offset = Vector2(60, 40)
 entity_movement_area_size = Vector2(500, 500)
 
+# skills panel
+sp_width = 400
+sp_first_layer_color = (152, 94, 63)
+sp_second_layer_color = (185, 122, 87)
+sp_layers_offset = 10
+sp_text_size = 20
+sp_text_color = (255, 255, 255)
+sp_border_size = 2
+sp_border_color = (255, 255, 255)
+sp_text_offset = 5
+sp_arrow_offset = Vector2(2, 3)
+
 # other
 potion_hp = 20
 collision_offset = 5
@@ -93,6 +105,7 @@ inventory_priority = 2
 dialog_window_priority = 2
 hero_bars_priority = 2
 message_log_priority = 2
+skills_panel_priority = 3
 
 # hero bars
 hb_right_offset = 100

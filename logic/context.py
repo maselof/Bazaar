@@ -6,3 +6,4 @@ class Context(Enum):
     INVENTORY = 1
     LOOTING = 2
     MENU = 3
+    SKILLS = 4

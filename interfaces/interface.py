@@ -132,6 +132,154 @@ class HealthBar(IDrawable):
         screen.blit(self.__band.image, self.__band.rect)
 
 
+class SkillsPanel(IDrawable):
+    hero: Hero
+    show: bool
+    old_attributes: {}
+    new_attributes: {}
+    stats: {}
+    symbol_height: int
+    size: Vector2
+
+    current_attribute: int
+    left_arrow: ImageWrapper
+    right_arrow: ImageWrapper
+    arrow_size: int
+
+    def __init__(self, hero: Hero):
+        self.hero = hero
+        self.show = False
+        self.priority = game_logic.skills_panel_priority
+        self.symbol_height = game_logic.get_text_size('A', game_logic.sp_text_size).y
+        self.open()
+        self.close()
+        self.size = Vector2(game_logic.sp_width, 2 * (game_logic.sp_layers_offset) + 3 * game_logic.sp_border_size +
+                            self.symbol_height * (len(self.new_attributes) + len(self.stats)))
+        self.current_attribute = 1
+        self.left_arrow = ImageWrapper('res/images/interface/hero_stats/arrow_left.png')
+        self.right_arrow = ImageWrapper('res/images/interface/hero_stats/arrow_right.png')
+        self.arrow_size = self.left_arrow.image.get_size()[0]
+        self.attributes_names = ['Skill points', 'Vitality', 'Endurance', 'Intellect', 'Strength', 'Dexterity']
+
+
+    def get_stats_from_attributes(self):
+        new_stats = Stats()
+        new_stats.vitality = self.new_attributes.get('Vitality')
+        new_stats.endurance = self.new_attributes.get('Endurance')
+        new_stats.intellect = self.new_attributes.get('Intellect')
+        new_stats.strength = self.new_attributes.get('Strength')
+        new_stats.dexterity = self.new_attributes.get('Dexterity')
+        new_stats.skill_points = self.new_attributes.get('Skill points')
+        return new_stats
+
+    def update_stats(self):
+        stats = self.get_stats_from_attributes()
+        h_s = self.hero.get_updated_stats(stats)
+        self.stats = {'HP': f'{h_s.hp}/{h_s.max_hp}', 'SP': f'{h_s.stamina}/{h_s.max_stamina}', 'MP': f'{h_s.mana}/{h_s.max_mana}',
+                      'Damage': str(h_s.damage), 'Attack Speed': str(h_s.attack_speed), 'DPS': str(h_s.dps), 'Speed': str(h_s.movement_speed)}
+
+    def open(self):
+        h_s = self.hero.stats
+        self.old_attributes = {'Skill points': h_s.skill_points, 'Vitality': h_s.vitality, 'Endurance': h_s.endurance,
+                               'Intellect': h_s.intellect, 'Strength': h_s.strength, 'Dexterity': h_s.dexterity}
+        self.new_attributes = {'Skill points': h_s.skill_points, 'Vitality': h_s.vitality, 'Endurance': h_s.endurance,
+                               'Intellect': h_s.intellect, 'Strength': h_s.strength, 'Dexterity': h_s.dexterity}
+        self.update_stats()
+        self.show = True
+
+    def close(self):
+        self.show = False
+
+    def can_increase(self) -> bool:
+        return self.new_attributes.get(self.attributes_names[0]) > 0
+
+    def increase(self):
+        if self.can_increase():
+            print('increase')
+            self.new_attributes[self.attributes_names[self.current_attribute]] += 1
+            self.new_attributes[self.attributes_names[0]] -= 1
+            self.update_stats()
+
+    def can_decrease(self) -> bool:
+        name = self.attributes_names[self.current_attribute]
+        return self.old_attributes[name] < self.new_attributes[name]
+
+    def decrease(self):
+        name = self.attributes_names[self.current_attribute]
+        if self.can_decrease():
+            print('decrease')
+            self.new_attributes[name] -= 1
+            self.new_attributes[self.attributes_names[0]] += 1
+            self.update_stats()
+
+    def save(self):
+        a_s = self.get_stats_from_attributes()
+        u_s = self.hero.get_updated_stats(a_s)
+        h_s = self.hero.stats
+        u_s.hp = h_s.hp
+        u_s.stamina = h_s.stamina
+        u_s.mana = h_s.mana
+        u_s.exp = h_s.exp
+        u_s.max_exp = h_s.max_exp
+        u_s.lvl = h_s.lvl
+        self.hero.stats = u_s
+        self.close()
+
+    def update(self):
+        pass
+
+    def draw(self, screen: pygame.Surface):
+        if not self.show:
+            return
+
+        first_layer_pos = game_logic.g_screen_center - self.size // 2
+        pygame.draw.rect(screen, game_logic.sp_first_layer_color, Rect(first_layer_pos.x, first_layer_pos.y,
+                                                                       self.size.x, self.size.y))
+
+        border_size = self.size - Vector2(2, 2) * game_logic.sp_layers_offset
+        border_pos = first_layer_pos + Vector2(1, 1) * game_logic.sp_layers_offset
+        pygame.draw.rect(screen, game_logic.sp_border_color, Rect(border_pos.x, border_pos.y,
+                                                                        border_size.x, border_size.y))
+
+        second_layer_size = Vector2(border_size.x - 2 * game_logic.sp_border_size, len(self.new_attributes) * self.symbol_height)
+        second_layer_pos = border_pos + Vector2(1, 1) * game_logic.sp_border_size
+        pygame.draw.rect(screen, game_logic.sp_second_layer_color, Rect(second_layer_pos.x, second_layer_pos.y,
+                                                                        second_layer_size.x, second_layer_size.y))
+
+        i = 0
+        name_pos = second_layer_pos + Vector2(game_logic.sp_text_offset, 0)
+        for name, value in self.new_attributes.items():
+            game_logic.print_text(screen, name, name_pos.x, name_pos.y, game_logic.sp_text_color, font_size=game_logic.sp_text_size)
+            value_text = str(value)
+            value_text_size = game_logic.get_text_size(value_text, game_logic.sp_text_size)
+            value_text_pos = Vector2(second_layer_pos.x + second_layer_size.x - value_text_size.x - game_logic.sp_text_offset - self.arrow_size, name_pos.y)
+            game_logic.print_text(screen, value_text, value_text_pos.x, value_text_pos.y, game_logic.sp_text_color, font_size=game_logic.sp_text_size)
+            name_pos.y += self.symbol_height
+
+            if i == self.current_attribute:
+                if self.can_decrease():
+                    self.left_arrow.set_position(value_text_pos - Vector2(self.arrow_size + game_logic.sp_arrow_offset.x, -1 * game_logic.sp_arrow_offset.y))
+                    self.left_arrow.draw(screen)
+                if self.can_increase():
+                    self.right_arrow.set_position(value_text_pos + Vector2(value_text_size.x, 0) + game_logic.sp_arrow_offset)
+                    self.right_arrow.draw(screen)
+            i += 1
+
+        second_layer_pos.y += second_layer_size.y + game_logic.sp_border_size
+        second_layer_size = Vector2(border_size.x - 2 * game_logic.sp_border_size, len(self.stats) * self.symbol_height)
+        pygame.draw.rect(screen, game_logic.sp_second_layer_color, Rect(second_layer_pos.x, second_layer_pos.y,
+                                                                        second_layer_size.x, second_layer_size.y))
+
+        name_pos = second_layer_pos + Vector2(game_logic.sp_text_offset, 0)
+        for name, value in self.stats.items():
+            game_logic.print_text(screen, name, name_pos.x, name_pos.y, game_logic.sp_text_color, font_size=game_logic.sp_text_size)
+            value_text_size = game_logic.get_text_size(value, game_logic.sp_text_size)
+            value_text_pos = Vector2(second_layer_pos.x + second_layer_size.x - value_text_size.x - game_logic.sp_text_offset, name_pos.y)
+            game_logic.print_text(screen, value, value_text_pos.x, value_text_pos.y, game_logic.sp_text_color, font_size=game_logic.sp_text_size)
+            name_pos.y += self.symbol_height
+
+
+
 class HeroBars(IDrawable):
     hero: Hero
 

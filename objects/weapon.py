@@ -16,6 +16,8 @@ class Weapon(Item):
     equipped_icon: ImageWrapper
     not_equipped_icon: ImageWrapper
 
+    damage: int
+
     def __init__(self,
                  name: str,
                  attack_range: float,
@@ -26,6 +28,7 @@ class Weapon(Item):
         super().__init__(name, 'weapons/', Vector2(0, 0), True, 1, hero_effects, cost, description)
         self.attack_range = attack_range
         self.attack_effects = attack_effects
+        self.damage = 10
 
         self.set_equipped(False)
 

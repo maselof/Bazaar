@@ -134,10 +134,26 @@ def event(screen, hero: Hero):
                     item = hero.inventory.inventory_panel[game_logic.NUMBER_KEYS.get(event.key)]
                     if item:
                         hero.use(item)
+            elif hero.context == Context.SKILLS:
+                if event.key == pygame.K_UP:
+                    skills_panel.current_attribute = max(skills_panel.current_attribute - 1, 1)
+                elif event.key == pygame.K_DOWN:
+                    skills_panel.current_attribute = min(skills_panel.current_attribute + 1, len(skills_panel.new_attributes) - 1)
+                elif event.key == pygame.K_LEFT:
+                    skills_panel.decrease()
+                elif event.key == pygame.K_RIGHT:
+                    skills_panel.increase()
+                elif event.key == pygame.K_RETURN:
+                    skills_panel.save()
 
             # other
-            if event.key == pygame.K_r:
-                print(hero.movement_queue)
+            if event.key == pygame.K_c:
+                if skills_panel.show:
+                    skills_panel.close()
+                    hero.change_context(Context.GAME)
+                else:
+                    skills_panel.open()
+                    hero.change_context(Context.SKILLS)
             elif event.key == pygame.K_ESCAPE:
                 interface.pause(screen)
             elif event.key == pygame.K_SPACE:
@@ -194,6 +210,7 @@ def add_interface_element(element: IDrawable):
 game_interface = interface.Interface()
 game_map = Map()
 message_log = interface.MessageLog()
+skills_panel = None
 
 
 def get_collided_visible_objects(game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
@@ -300,6 +317,9 @@ def run():
 
     camera = Camera(game_map, hero)
     dialog_window = interface.DialogWindow(hero)
+    global skills_panel
+    skills_panel = interface.SkillsPanel(hero)
+    add_interface_element(skills_panel)
     add_interface_element(dialog_window)
     add_interface_element(message_log)
 

@@ -35,27 +35,52 @@ class AI:
 
 
 class Stats:
+    vitality: int
     max_hp: int
     hp: int
+
+    endurance: int
     max_stamina: int
     stamina: int
+
+    intellect: int
     max_mana: int
     mana: int
+
+    strength: int
+    dexterity: int
+
     max_exp: int
     exp: int
     lvl: int
+    skill_points: int
+
+    attack_speed: float
+    movement_speed: float
+    damage: float
+    dps: float
 
     def __init__(self,
                  max_hp: int = 100, max_stamina: int = 100, max_mana: int = 100, max_exp: int = 100, exp: int = 0, lvl: int = 0):
+        self.vitality = 10
         self.max_hp = max_hp
         self.hp = self.max_hp
+        self.endurance = 10
         self.max_stamina = max_stamina
         self.stamina = self.max_stamina
+        self.intellect = 10
         self.max_mana = max_mana
         self.mana = self.max_mana
+        self.strength = 10
+        self.dexterity = 10
         self.max_exp = max_exp
         self.exp = exp
         self.lvl = lvl
+        self.skill_points = 0
+        self.attack_speed = 1
+        self.movement_speed = 1
+        self.damage = 10
+        self.dps = 10
 
 
 class Entity(GameObject, ILootable):
@@ -255,6 +280,29 @@ class Entity(GameObject, ILootable):
             self.attack_entity(object, distance)
         else:
             self.do_random_movement()
+
+    def get_updated_stats(self, stats: Stats):
+        new_stats = Stats()
+        new_stats.max_hp = stats.vitality * 10
+        new_stats.max_stamina = stats.endurance * 10
+        new_stats.max_mana = stats.intellect * 10
+        new_stats.damage = self.weapon.damage * stats.strength / 10
+        new_stats.attack_speed = stats.dexterity / 10
+        new_stats.dps = round(new_stats.damage * new_stats.attack_speed, 1)
+        new_stats.movement_speed = stats.dexterity / 10
+        new_stats.hp = stats.hp
+        new_stats.stamina = stats.stamina
+        new_stats.mana = stats.mana
+        new_stats.strength = stats.strength
+        new_stats.dexterity = stats.dexterity
+        new_stats.vitality = stats.vitality
+        new_stats.endurance = stats.endurance
+        new_stats.intellect = stats.intellect
+        new_stats.max_exp = stats.max_exp
+        new_stats.exp = stats.exp
+        new_stats.lvl = stats.lvl
+        new_stats.skill_points = stats.skill_points
+        return new_stats
 
     def update(self):
         super().update()

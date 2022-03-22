@@ -41,7 +41,6 @@ class DialogWindow(IDrawable):
             return
         self.show = True
         if isinstance(go, Item):
-            print(go, go.name)
             self.message = 'Take (E)'
         elif isinstance(go, Chest):
             self.message = 'Loot (E)'
@@ -128,6 +127,14 @@ class HeroBars(IDrawable):
         bar_pos = Vector2(game_logic.g_screen_width - game_logic.hb_right_offset - game_logic.hb_bar_size.x,
                           game_logic.g_screen_height - game_logic.hb_bottom_offset - game_logic.hb_bar_size.y)
         self.draw_bar(screen, self.hero.stats.max_mana, self.hero.stats.mana, bar_pos, game_logic.hb_mana_color)
+
+        exp_bar_pos = Vector2(game_logic.hb_right_offset, bar_pos.y)
+        self.draw_bar(screen, self.hero.stats.max_exp, self.hero.stats.exp, exp_bar_pos, game_logic.hb_exp_bar_color)
+        lvl_text = f'LVL {self.hero.stats.lvl}'
+        lvl_height = game_logic.get_text_size(lvl_text, game_logic.hb_exp_text_size).y
+        lvl_pos = exp_bar_pos - Vector2(0, lvl_height)
+        game_logic.print_text(screen, lvl_text, lvl_pos.x, lvl_pos.y, game_logic.hb_text_color, font_size=game_logic.hb_exp_text_size)
+
         bar_pos.y -= game_logic.hb_bar_size.y + game_logic.hb_bars_offset
         self.draw_bar(screen, self.hero.stats.max_stamina, self.hero.stats.stamina, bar_pos, game_logic.hb_stamina_color)
         bar_pos.y -= game_logic.hb_bar_size.y + game_logic.hb_bars_offset

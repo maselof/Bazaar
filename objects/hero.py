@@ -132,6 +132,13 @@ class Hero(Entity):
     def die(self):
         pass
 
+    def gain_exp(self, exp: int):
+        self.stats.exp += exp
+        while self.stats.exp >= self.stats.max_exp:
+            self.stats.lvl += 1
+            self.stats.exp -= self.stats.max_exp
+            self.stats.max_exp += game_logic.exp_gain
+
     def update(self):
         super().update()
         self.inventory.show_frame = self.context == Context.INVENTORY

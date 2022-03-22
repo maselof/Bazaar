@@ -41,14 +41,21 @@ class Stats:
     stamina: int
     max_mana: int
     mana: int
+    max_exp: int
+    exp: int
+    lvl: int
 
-    def __init__(self):
-        self.max_hp = 100
+    def __init__(self,
+                 max_hp: int = 100, max_stamina: int = 100, max_mana: int = 100, max_exp: int = 100, exp: int = 0, lvl: int = 0):
+        self.max_hp = max_hp
         self.hp = self.max_hp
-        self.max_stamina = 100
+        self.max_stamina = max_stamina
         self.stamina = self.max_stamina
-        self.max_mana = 100
+        self.max_mana = max_mana
         self.mana = self.max_mana
+        self.max_exp = max_exp
+        self.exp = exp
+        self.lvl = lvl
 
 
 class Entity(GameObject, ILootable):
@@ -79,7 +86,8 @@ class Entity(GameObject, ILootable):
                  animations_path: str,
                  size: Vector2,
                  collision_rect_offset: pygame.Vector2 = Vector2(0, 0),
-                 scaling: float = 1
+                 scaling: float = 1,
+                 stats: Stats = Stats()
                  ):
         super().__init__(name, animations_path, size, collision_rect_offset, True, scaling)
 
@@ -88,7 +96,7 @@ class Entity(GameObject, ILootable):
         self.left_flip = False
         self.direction = Direction.LEFT
 
-        self.stats = Stats()
+        self.stats = stats
         self.is_dead = False
 
         self.weapon = game_logic.get_item('fists')

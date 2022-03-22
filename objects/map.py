@@ -61,6 +61,9 @@ class Map(IDrawable):
     locations: [Location]
 
     def __init__(self):
+        game_logic.init_items()
+        game_logic.init_game_objects()
+        game_logic.init_entities()
         game_logic.init_locations()
         self.locations = []
         self.all_frames = [MapFrame('res/images/map/backgrounds/grass.png', Vector2(0, 0))]
@@ -204,6 +207,7 @@ class Map(IDrawable):
                 game_cycle.add_interface_element(bag.inventory)
                 self.add_game_object(bag)
                 self.remove_game_object(go)
+                self.hero.gain_exp(go.stats.exp)
             if isinstance(go, Chest):
                 if go.name == 'bag' and len(go.inventory.container) == 0:
                     go.inventory.close()

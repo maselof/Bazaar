@@ -7,7 +7,7 @@ from effect import Effect
 import pygame
 from location import Location
 from game_object import GameObject
-from entity import Entity
+from entity import *
 from chest import Chest
 
 
@@ -15,6 +15,8 @@ from chest import Chest
 g_timer = 0
 g_frames_count = 2
 g_fps = 60
+
+exp_gain = 100
 
 
 # screen
@@ -96,6 +98,8 @@ hb_frame_color = (0, 0, 0)
 hb_bars_offset = 5
 hb_text_size = 15
 hb_text_color = (232, 180, 0)
+hb_exp_bar_color = (255, 255, 255)
+hb_exp_text_size = 20
 
 # map
 map_frame_size = Vector2(1680, 1050)
@@ -136,11 +140,14 @@ def get_effect(id: str) -> Effect:
 
 
 # id: GameObject
-ITEMS = {'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20,
-                             'Weak healing potion. Increase your hp on 10 points.'),
-         'fists': Weapon('fists', 40, [], [], 0, ''),
-         'cudgel': Weapon('cudgel', 80, [], [], 100, 'The most common weapon among bandits.'),
-         'sword': Weapon('sword', 120, [], [], 250, 'Some description.')}
+ITEMS = {}
+
+
+def init_items():
+    ITEMS.update({'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20, 'Weak healing potion. Increase your hp on 10 points.'),
+                  'fists': Weapon('fists', 40, [], [], 0, ''),
+                  'cudgel': Weapon('cudgel', 80, [], [], 100, 'The most common weapon among bandits.'),
+                  'sword': Weapon('sword', 120, [], [], 250, 'Some description.')})
 
 
 def get_item(id: str):
@@ -150,17 +157,28 @@ def get_item(id: str):
     return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects, item.cost, item.description)
 
 
-ENTITIES = {'skeleton': Entity('skeleton', '', Vector2(30, 70), entity_collision_offset, 1),
-            'bandit': Entity('bandit', '', Vector2(30, 70), entity_collision_offset, 1)}
+ENTITIES = {}
+
+
+def init_entities():
+    skeleton_stats = Stats(max_hp=50, exp=50, lvl=0)
+    bandit_stats = Stats(max_hp=100, exp=100, lvl=0)
+    ENTITIES.update({'skeleton': Entity('skeleton', '', Vector2(30, 70), entity_collision_offset, 1, skeleton_stats),
+                     'bandit': Entity('bandit', '', Vector2(30, 70), entity_collision_offset, 1, bandit_stats)})
 
 
 def get_entity(id: str):
     entity = ENTITIES.get(id)
-    return Entity(entity.name, entity.animations_path, entity.size, entity.collision_rect_offset, entity.scaling)
+    entity_stats = Stats(max_hp=entity.stats.max_hp, exp=entity.stats.exp, lvl=entity.stats.lvl)
+    return Entity(entity.name, entity.animations_path, entity.size, entity.collision_rect_offset, entity.scaling, entity_stats)
 
 
-GAME_OBJECTS = {'chest': Chest('chest', 'general/', Vector2(58, 5), Vector2(1, 25)),
-                'bag': Chest('bag', 'general/', Vector2(0, 0), Vector2(0, 0))}
+GAME_OBJECTS = {}
+
+
+def init_game_objects():
+    GAME_OBJECTS.update({'chest': Chest('chest', 'general/', Vector2(58, 5), Vector2(1, 25)),
+                         'bag': Chest('bag', 'general/', Vector2(0, 0), Vector2(0, 0))})
 
 
 def fill_chest(chest: Chest, seed: int):

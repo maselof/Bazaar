@@ -17,7 +17,7 @@ def draw(screen: pygame.Surface, image: pygame.Surface, rect: pygame.Surface):
     screen.blit(image, rect)
 
 
-def handle_movement(hero):
+def handle_movement(hero, switch_mode: bool):
 
     direction_vector = Vector2(0, 0)
     priority_direction = hero.direction
@@ -45,11 +45,14 @@ def handle_movement(hero):
                 direction_vector += dir.value
                 break
 
-    hero.set_action('walking', direction_vector)
+    hero.set_action('walking', [direction_vector, switch_mode])
 
 
 def event(screen, hero: Hero):
-    handle_movement(hero)
+    switch_mode = pygame.key.get_pressed()[pygame.K_LSHIFT]
+
+    handle_movement(hero, switch_mode)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -97,9 +100,11 @@ def event(screen, hero: Hero):
                         if hero.looting_object and hero.looting_object.inventory.is_open:
                             if isinstance(focus_item, Weapon) and focus_item.is_equipped:
                                 continue
-                            hero.inventory.remove_item(focus_item)
+
+                            count = focus_item.count if switch_mode else 1
+                            hero.inventory.remove_item(focus_item, count)
                             print('GIVE ' + focus_item.name)
-                            hero.looting_object.inventory.add_item(game_logic.get_item(focus_item.name))
+                            hero.looting_object.inventory.add_item(game_logic.get_item(focus_item.name), count)
                         else:
                             hero.use(focus_item)
                 elif game_logic.NUMBER_KEYS.get(event.key) is not None:
@@ -120,9 +125,10 @@ def event(screen, hero: Hero):
                 elif event.key == pygame.K_RETURN:
                     looted_item = hero.looting_object.inventory.get_focus_item()
                     if looted_item:
-                        hero.looting_object.inventory.remove_item(looted_item)
+                        count = looted_item.count if switch_mode else 1
+                        hero.looting_object.inventory.remove_item(looted_item, count)
                         print('GET ' + looted_item.name)
-                        hero.inventory.add_item(game_logic.get_item(looted_item.name))
+                        hero.inventory.add_item(game_logic.get_item(looted_item.name), count)
             elif hero.context == Context.GAME:
                 if game_logic.NUMBER_KEYS.get(event.key) is not None:
                     item = hero.inventory.inventory_panel[game_logic.NUMBER_KEYS.get(event.key)]
@@ -203,19 +209,19 @@ def get_collided_visible_objects(game_object: GameObject, area: [pygame.Rect]) -
 
 
 def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
-    pos = Vector2(game_object.rect.centerx, game_object.rect.centery)
+    pos = game_object.get_center()
 
     min_distance = 1000000
     nearest_object = None
     if game_map.hero != game_object:
-        min_distance = pos.distance_to(Vector2(game_map.hero.rect.centerx, game_map.hero.rect.centery))
+        min_distance = pos.distance_to(game_map.hero.get_center())
         nearest_object = game_map.hero
 
     for go in game_map.visible_game_objects:
         if go == game_object:
             continue
 
-        go_pos = Vector2(go.rect.centerx, go.rect.centery)
+        go_pos = go.get_center()
         distance = go_pos.distance_to(pos)
         if distance < min_distance:
             min_distance = distance
@@ -267,6 +273,7 @@ def run():
 
     potion = game_logic.get_item('heal_potion')
     potion.set_position(Vector2(800, 800))
+    potion.count = 10
     add_game_object(potion, game_map)
 
     cudgel = game_logic.get_item('cudgel')
@@ -289,11 +296,6 @@ def run():
     entity.set_weapon(game_logic.get_item('cudgel'))
     add_entity(entity, game_map, game_interface)
     add_interface_element(entity.inventory)
-
-    chest = Chest('chest', 'general/', Vector2(58, 5), Vector2(1, 25))
-    chest.set_position(Vector2(500, 500))
-    add_interface_element(chest.inventory)
-    add_game_object(chest, game_map)
 
     camera = Camera(game_map, hero)
     dialog_window = interface.DialogWindow(hero)

@@ -54,7 +54,7 @@ class GameObject(IDrawable):
         return pygame.Vector2(self.rect.x, self.rect.y)
 
     def get_center(self) -> pygame.Vector2:
-        return Vector2(self.collision_rect.center)
+        return Vector2(self.rect.center)
 
     def move(self, vector: pygame.Vector2):
         self.rect.x += vector.x

@@ -8,6 +8,7 @@ from game_object import GameObject
 from entity import Entity
 import random
 from location import Location
+from chest import Chest
 
 
 def to_frame_coordinates(point: Vector2) -> Vector2:
@@ -192,10 +193,21 @@ class Map(IDrawable):
         self.all_game_objects.remove(game_object)
         self.update_visible_objects()
 
-    def check_dead(self):
+    def check_to_remove(self):
         for go in self.visible_game_objects:
             if isinstance(go, Entity) and go.is_dead:
+                bag = game_logic.get_game_object('bag')
+                game_logic.fill_chest(bag, 5)
+                if go.weapon.name != 'fists':
+                    bag.inventory.add_item(go.weapon)
+                bag.set_position(go.get_center())
+                game_cycle.add_interface_element(bag.inventory)
+                self.add_game_object(bag)
                 self.remove_game_object(go)
+            if isinstance(go, Chest):
+                if go.name == 'bag' and len(go.inventory.container) == 0:
+                    go.inventory.close()
+                    self.remove_game_object(go)
 
     def move(self, vector: pygame.Vector2):
         for location in self.locations:
@@ -216,7 +228,7 @@ class Map(IDrawable):
         return collided
 
     def update(self):
-        self.check_dead()
+        self.check_to_remove()
         f2 = self.check_objects_transitions()
         f1 = self.check_change_frame()
         if f1 | f2:

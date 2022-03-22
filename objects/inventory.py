@@ -131,13 +131,13 @@ class GameContainer(IDrawable):
             return None
         return self.container[self.focus_item_index]
 
-    def add_item(self, item: game_logic.Item):
+    def add_item(self, item: game_logic.Item, count: int = 1):
         for i in self.container:
             if i.name == item.name:
                 if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
                     print(item.is_equipped, i.is_equipped)
                     continue
-                i.count += 1
+                i.count += count
                 if item.bottom_panel_index != 0:
                     i.bottom_panel_index = item.bottom_panel_index
                 return
@@ -145,15 +145,16 @@ class GameContainer(IDrawable):
         new_item.bottom_panel_index = item.bottom_panel_index
         if isinstance(new_item, Weapon):
             new_item.set_equipped(item.is_equipped)
+        new_item.count = count
         self.container.append(new_item)
 
-    def remove_item(self, item: game_logic.Item):
+    def remove_item(self, item: game_logic.Item, count: int = 1):
         for i in self.container:
             if i.name == item.name:
                 if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
                     print(item.is_equipped, i.is_equipped)
                     continue
-                i.count -= 1
+                i.count -= count
 
     def update(self):
         for item in self.container:

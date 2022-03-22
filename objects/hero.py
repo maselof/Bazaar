@@ -26,9 +26,32 @@ class Hero(Entity):
         self.enable_random_actions = False
         self.speed = 5
         self.ai.is_enemy = False
+        self.init_effects()
+
+    def init_effects(self):
+        self.effects.update({'Fatigue': game_logic.EFFECTS.get('Fatigue'),
+                             'Breathing': game_logic.EFFECTS.get('Breathing')})
+        self.effects.get('Fatigue').start()
+        self.effects.get('Breathing').start()
 
     def action_walking(self, args: [object]):
-        self.direction_vector = game_cycle.check_collisions(self, args[0])
+        self.direction_vector = game_cycle.check_collisions(self, args[0][0])
+        if len(self.effects):
+            if args[0][1] and self.stats.stamina > 0:
+                self.speed = game_logic.hero_run_speed
+            else:
+                self.speed = game_logic.hero_base_speed
+
+            self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.speed / game_logic.hero_base_speed
+
+            self.effects.get('Fatigue').enabled = args[0][1]
+            self.effects.get('Breathing').enabled = False
+
+    def action_idle(self, args: [object]):
+        super().action_idle(args)
+        if len(self.effects):
+            self.effects.get('Fatigue').enabled = False
+            self.effects.get('Breathing').enabled = True
 
     def check_looting_object_distance(self):
         if not self.looting_object:
@@ -43,7 +66,7 @@ class Hero(Entity):
 
     def use(self, item: Item):
         for effect in item.effects:
-            self.effects.append(effect)
+            self.effects.update({effect.name: effect})
             effect.start()
         if isinstance(item, Weapon):
             new_weapon = game_logic.get_item(item.name)
@@ -93,7 +116,7 @@ class Hero(Entity):
 
         print(object)
         if isinstance(object, Item):
-            self.inventory.add_item(object)
+            self.inventory.add_item(object, object.count)
             game_cycle.game_map.remove_game_object(object)
         elif isinstance(object, Chest):
             if (self.looting_object is not None) and self.looting_object.inventory.is_open:

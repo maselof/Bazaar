@@ -8,6 +8,7 @@ import pygame
 from location import Location
 from game_object import GameObject
 from entity import Entity
+from chest import Chest
 
 
 # general
@@ -27,6 +28,8 @@ g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 g_hero_width = 30
 g_hero_height = 70
 hero_take_radius = 85
+hero_base_speed = 5
+hero_run_speed = 7
 
 # entities
 g_entity_walking_anim_speed = 0.2
@@ -106,20 +109,30 @@ NUMBER_KEYS = {pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3, pygam
 
 
 def healing(entity: object, value: float):
-    entity.stats.hp += int(value)
+    entity.stats.hp = min(entity.stats.hp + int(value), entity.stats.max_hp)
 
 
 def bleeding(entity: object, value: float):
-    entity.stats.hp -= int(value)
+    entity.stats.hp = max(entity.stats.hp - int(value), 0)
 
 
-EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 10),
-           'Bleeding': Effect('Bleeding', bleeding, 300, 60, 10)}
+def fatigue(entity: object, value: float):
+    entity.stats.stamina = max(entity.stats.stamina - int(value), 0)
+
+
+def breathing(entity: object, value: float):
+    entity.stats.stamina = min(entity.stats.stamina + int(value), entity.stats.max_stamina)
+
+
+EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 10, False),
+           'Bleeding': Effect('Bleeding', bleeding, 300, 60, 10, False),
+           'Fatigue': Effect('Fatigue', fatigue, 60, 60, 5, True),
+           'Breathing': Effect('Breathing', breathing, 60, 60, 5, True)}
 
 
 def get_effect(id: str) -> Effect:
     effect = EFFECTS.get(id)
-    return Effect(effect.name, effect.action_func, effect.duration, effect.delay, effect.value)
+    return Effect(effect.name, effect.action_func, effect.duration, effect.delay, effect.value, effect.looped)
 
 
 # id: GameObject
@@ -144,6 +157,29 @@ ENTITIES = {'skeleton': Entity('skeleton', '', Vector2(30, 70), entity_collision
 def get_entity(id: str):
     entity = ENTITIES.get(id)
     return Entity(entity.name, entity.animations_path, entity.size, entity.collision_rect_offset, entity.scaling)
+
+
+GAME_OBJECTS = {'chest': Chest('chest', 'general/', Vector2(58, 5), Vector2(1, 25)),
+                'bag': Chest('bag', 'general/', Vector2(0, 0), Vector2(0, 0))}
+
+
+def fill_chest(chest: Chest, seed: int):
+    items = list(ITEMS.values())
+    print(items)
+    count = random.randint(0, seed)
+    for i in range(count):
+        item = items[random.randint(0, len(items) - 1)]
+        if item.name != 'fists':
+            chest.inventory.add_item(item)
+
+
+def get_game_object(name: str) -> GameObject:
+    go = GAME_OBJECTS.get(name)
+    if isinstance(go, Chest):
+        cgo = Chest(go.name, go.animations_path, go.size, go.collision_rect_offset)
+        return cgo
+    return GameObject(go.name, go.animations_path, go.size, go.collision_rect_offset, go.directional, go.scaling)
+
 
 
 LOCATIONS = {}

@@ -1,6 +1,7 @@
 import game_logic
 from inventory import *
 from hero import *
+from chest import Chest
 
 
 class Interface(IDrawable):
@@ -40,9 +41,12 @@ class DialogWindow(IDrawable):
             return
         self.show = True
         if isinstance(go, Item):
+            print(go, go.name)
             self.message = 'Take (E)'
-        elif isinstance(go, ILootable):
+        elif isinstance(go, Chest):
             self.message = 'Loot (E)'
+        else:
+            self.show = False
 
     def draw(self, screen: pygame.Surface):
         if not self.show:

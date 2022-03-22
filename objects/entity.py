@@ -66,7 +66,7 @@ class Entity(GameObject, ILootable):
     attack_rects: [pygame.Rect]
     c_attack_rects: int
 
-    effects: [Effect]
+    effects: {str: Effect}
 
     ai: AI
     enable_random_actions: bool
@@ -97,7 +97,7 @@ class Entity(GameObject, ILootable):
         self.c_attack_rects = 5
 
         self.inventory = GameContainer()
-        self.effects = []
+        self.effects = {}
 
         self.enable_random_actions = True
         self.ai = AI()
@@ -164,7 +164,7 @@ class Entity(GameObject, ILootable):
                 go.get_damage(10)
                 for effect in self.weapon.attack_effects:
                     effect.start()
-                    go.effects.append(effect)
+                    go.effects.update({effect.name: effect})
 
     def get_damage(self, damage: int):
         self.stats.hp = max(self.stats.hp - damage, 0)
@@ -181,10 +181,13 @@ class Entity(GameObject, ILootable):
         self.weapon.actions.get('attacking').animation.speed = self.actions.get('attacking').animation.speed
 
     def update_effects(self):
-        for effect in self.effects:
+        finished = []
+        for effect in self.effects.values():
             effect.update(self)
             if effect.finished:
-                self.effects.remove(effect)
+                finished.append(effect)
+        for effect in finished:
+            del self.effects[effect.name]
 
     def do_random_movement(self):
         if self.ai.finished:

@@ -67,6 +67,35 @@ class DialogWindow(IDrawable):
         game_logic.print_text(screen, self.message, text_pos.x, text_pos.y,game_logic.dw_text_color, font_size=game_logic.dw_text_size)
 
 
+class MessageLog(IDrawable):
+    message_queue: [[str, int]]
+    symbol_height: int
+    duration: int
+
+    def __init__(self):
+        self.message_queue = []
+        self.symbol_height = game_logic.get_text_size('A', game_logic.ml_text_size).y
+        self.duration = game_logic.ml_duration
+        self.priority = game_logic.message_log_priority
+
+    def add_message(self, message: str):
+        self.message_queue.append([message, 0])
+
+    def update(self):
+        for m in self.message_queue:
+            m[1] += 1
+            if m[1] >= self.duration:
+                self.message_queue.remove(m)
+
+    def draw(self, screen: pygame.Surface):
+        counter = 0
+        count = len(self.message_queue)
+        for m in self.message_queue:
+            pos = Vector2(game_logic.ml_left_offset, game_logic.g_screen_center.y - (count - counter) * self.symbol_height)
+            game_logic.print_text(screen, m[0], pos.x, pos.y, game_logic.ml_text_color, font_size=game_logic.ml_text_size)
+            counter += 1
+
+
 class HealthBar(IDrawable):
     __frame: ImageWrapper
     __band: ImageWrapper

@@ -192,6 +192,7 @@ class Map(IDrawable):
 
     def remove_game_object(self, game_object: GameObject):
         frame_pos = to_frame_coordinates(game_object.get_position() - self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
+        print(frame_pos, game_object, game_object.name)
         self.get_frame_by_pos(frame_pos).game_objects.remove(game_object)
         self.all_game_objects.remove(game_object)
         self.update_visible_objects()
@@ -203,11 +204,13 @@ class Map(IDrawable):
                 game_logic.fill_chest(bag, 5)
                 if go.weapon.name != 'fists':
                     bag.inventory.add_item(go.weapon)
+
                 bag.set_position(go.get_center())
                 game_cycle.add_interface_element(bag.inventory)
                 self.add_game_object(bag)
                 self.remove_game_object(go)
                 self.hero.gain_exp(go.stats.exp)
+                game_cycle.message_log.add_message(f'Gain {go.stats.exp} xp')
             if isinstance(go, Chest):
                 if go.name == 'bag' and len(go.inventory.container) == 0:
                     go.inventory.close()

@@ -20,7 +20,7 @@ exp_gain = 100
 
 
 # screen
-g_screen_width = 1680
+g_screen_width = 1650
 g_screen_height = 1000
 g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
@@ -81,11 +81,18 @@ dscw_description_offset = 5
 dscw_stats_text_size = 20
 dscw_cost_text_color = (232, 180, 0)
 
+# message log
+ml_text_size = 20
+ml_text_color = (255, 255, 255)
+ml_duration = 300
+ml_left_offset = 30
+
 # interface priorities
 hp_bar_priority = 1
 inventory_priority = 2
 dialog_window_priority = 2
 hero_bars_priority = 2
+message_log_priority = 2
 
 # hero bars
 hb_right_offset = 100

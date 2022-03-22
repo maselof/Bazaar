@@ -118,6 +118,7 @@ class Hero(Entity):
         if isinstance(object, Item):
             self.inventory.add_item(object, object.count)
             game_cycle.game_map.remove_game_object(object)
+            game_cycle.message_log.add_message(f'Looted {object.name} x{object.count}')
         elif isinstance(object, Chest):
             if (self.looting_object is not None) and self.looting_object.inventory.is_open:
                 self.looting_object.inventory.close()

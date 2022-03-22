@@ -193,6 +193,7 @@ def add_interface_element(element: IDrawable):
 
 game_interface = interface.Interface()
 game_map = Map()
+message_log = interface.MessageLog()
 
 
 def get_collided_visible_objects(game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
@@ -300,6 +301,7 @@ def run():
     camera = Camera(game_map, hero)
     dialog_window = interface.DialogWindow(hero)
     add_interface_element(dialog_window)
+    add_interface_element(message_log)
 
     while True:
         clock.tick(game_logic.g_fps)

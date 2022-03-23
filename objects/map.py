@@ -182,7 +182,7 @@ class Map(IDrawable):
             self.visible_game_objects.extend(frame.game_objects)
 
     def add_game_object(self, game_object: GameObject):
-        frame_pos = to_frame_coordinates(game_object.get_position()- self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
+        frame_pos = to_frame_coordinates(game_object.get_center()- self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
         if not self.get_frame_by_pos(frame_pos):
             self.generate_frame(frame_pos)
 
@@ -191,7 +191,7 @@ class Map(IDrawable):
         self.update_visible_objects()
 
     def remove_game_object(self, game_object: GameObject):
-        frame_pos = to_frame_coordinates(game_object.get_position() - self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
+        frame_pos = to_frame_coordinates(game_object.get_center() - self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
         print(frame_pos, game_object, game_object.name)
         self.get_frame_by_pos(frame_pos).game_objects.remove(game_object)
         self.all_game_objects.remove(game_object)

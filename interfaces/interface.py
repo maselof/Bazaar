@@ -106,7 +106,7 @@ class HealthBar(IDrawable):
     def __init__(self,
                  entity: Entity):
         self.entity = entity
-        self.__offset = -10
+        self.__offset = 20
         self.__frame = ImageWrapper('res/images/interface/health_bar/frame.png')
         self.__band = ImageWrapper('res/images/interface/health_bar/band.png')
         self.__frame.scale(0.7, 0.5)
@@ -130,6 +130,10 @@ class HealthBar(IDrawable):
     def draw(self, screen: pygame.Surface):
         screen.blit(self.__frame.image, self.__frame.rect)
         screen.blit(self.__band.image, self.__band.rect)
+        lvl_text = f'LVL {self.entity.stats.lvl}'
+        lvl_text_size = game_logic.get_text_size(lvl_text, game_logic.hb_lvl_text_size)
+        lvl_text_pos = Vector2(self.__frame.get_position().x + (self.__frame.get_size().x - lvl_text_size.x) // 2, self.__frame.get_position().y - 20)
+        game_logic.print_text(screen, lvl_text, lvl_text_pos.x, lvl_text_pos.y, game_logic.hb_text_color, font_size=game_logic.hb_lvl_text_size)
 
 
 class SkillsPanel(IDrawable):
@@ -277,7 +281,6 @@ class SkillsPanel(IDrawable):
             value_text_pos = Vector2(second_layer_pos.x + second_layer_size.x - value_text_size.x - game_logic.sp_text_offset, name_pos.y)
             game_logic.print_text(screen, value, value_text_pos.x, value_text_pos.y, game_logic.sp_text_color, font_size=game_logic.sp_text_size)
             name_pos.y += self.symbol_height
-
 
 
 class HeroBars(IDrawable):

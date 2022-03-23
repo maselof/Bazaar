@@ -32,6 +32,12 @@ class DescriptionWindow(IDrawable):
             game_logic.print_text(screen, word, pos.x + current_width, pos.y, game_logic.dw_text_color, font_size=font_size)
             current_width += word_size.x + space_size.x
 
+    def draw_stat(self, screen: pygame.Surface, stat_name: str, stat_value: str, pos: Vector2, right_border: int):
+        game_logic.print_text(screen, stat_name, pos.x, pos.y, game_logic.dw_text_color, font_size=game_logic.dscw_stats_text_size)
+        value = str(stat_value)
+        value_pos = Vector2(right_border - game_logic.get_text_size(value, game_logic.dscw_stats_text_size).x, pos.y)
+        game_logic.print_text(screen, value, value_pos.x, value_pos.y, game_logic.dw_text_color, font_size=game_logic.dscw_stats_text_size)
+
     def draw(self, screen: pygame.Surface):
         if not self.item:
             return
@@ -63,11 +69,17 @@ class DescriptionWindow(IDrawable):
         stats_pos = second_layer_pos + Vector2(0, game_logic.dscw_frame_icon_offset * 2 + game_logic.panel_items_size) + Vector2(1, 1) * game_logic.dscw_description_offset
         stats_right_border = second_layer_pos.x + second_layer_size.x - game_logic.dscw_description_offset
         symbol_height = game_logic.get_text_size('A', game_logic.dscw_stats_text_size).y
+
+        if isinstance(self.item, Weapon):
+            self.draw_stat(screen, 'Damage', str(self.item.damage), stats_pos, stats_right_border)
+            stats_pos.y += symbol_height
+            self.draw_stat(screen, 'Attack Speed Modifier', str(self.item.attack_speed_modifier), stats_pos, stats_right_border)
+            stats_pos.y += symbol_height
+            self.draw_stat(screen, 'Range', str(self.item.attack_range), stats_pos, stats_right_border)
+            stats_pos.y += symbol_height
+
         for effect in self.item.effects:
-            game_logic.print_text(screen, effect.name, stats_pos.x, stats_pos.y, game_logic.dw_text_color, font_size=game_logic.dscw_stats_text_size)
-            value = str(effect.value)
-            value_pos = Vector2(stats_right_border - game_logic.get_text_size(value, game_logic.dscw_stats_text_size).x, stats_pos.y)
-            game_logic.print_text(screen, value, value_pos.x, value_pos.y, game_logic.dw_text_color, font_size=game_logic.dscw_stats_text_size)
+            self.draw_stat(screen, effect.name, str(effect.value), stats_pos, stats_right_border)
             stats_pos.y += symbol_height
 
         cost_text_pos = second_layer_pos + Vector2(0, second_layer_size.y - symbol_height) + Vector2(1, -1) * game_logic.dscw_description_offset

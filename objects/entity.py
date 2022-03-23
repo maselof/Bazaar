@@ -304,6 +304,11 @@ class Entity(GameObject, ILootable):
         new_stats.skill_points = stats.skill_points
         return new_stats
 
+    def refresh(self):
+        self.stats.hp = self.stats.max_hp
+        self.stats.stamina = self.stats.max_stamina
+        self.stats.mana = self.stats.max_mana
+
     def update(self):
         super().update()
 

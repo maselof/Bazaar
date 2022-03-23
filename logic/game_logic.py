@@ -99,6 +99,9 @@ ml_text_color = (255, 255, 255)
 ml_duration = 300
 ml_left_offset = 30
 
+# health bar
+hb_lvl_text_size = 15
+
 # interface priorities
 hp_bar_priority = 1
 inventory_priority = 2
@@ -165,16 +168,25 @@ ITEMS = {}
 
 def init_items():
     ITEMS.update({'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20, 'Weak healing potion. Increase your hp on 10 points.'),
-                  'fists': Weapon('fists', 40, [], [], 0, ''),
-                  'cudgel': Weapon('cudgel', 80, [], [], 100, 'The most common weapon among bandits.'),
-                  'sword': Weapon('sword', 120, [], [], 250, 'Some description.')})
+                  'fists': Weapon('fists', 10, 1, 50, [], [], 0, ''),
+                  'cudgel': Weapon('cudgel', 40, 0.7, 80, [], [], 100, 'The most common weapon among bandits.'),
+                  'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.')})
 
 
 def get_item(id: str):
     item = ITEMS.get(id)
     if isinstance(item, Weapon):
-        return Weapon(item.name, item.attack_range, item.effects, item.attack_effects, item.cost, item.description)
+        return Weapon(item.name, item.damage, item.attack_speed_modifier, item.attack_range, item.effects, item.attack_effects, item.cost, item.description)
     return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects, item.cost, item.description)
+
+
+def get_weapons():
+    weapons = []
+    for id in ITEMS.keys():
+        item = get_item(id)
+        if isinstance(item, Weapon):
+            weapons.append(item)
+    return weapons
 
 
 ENTITIES = {}

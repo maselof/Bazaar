@@ -199,7 +199,6 @@ class SkillsPanel(IDrawable):
 
     def increase(self):
         if self.can_increase():
-            print('increase')
             self.new_attributes[self.attributes_names[self.current_attribute]] += 1
             self.new_attributes[self.attributes_names[0]] -= 1
             self.update_stats()
@@ -211,7 +210,6 @@ class SkillsPanel(IDrawable):
     def decrease(self):
         name = self.attributes_names[self.current_attribute]
         if self.can_decrease():
-            print('decrease')
             self.new_attributes[name] -= 1
             self.new_attributes[self.attributes_names[0]] += 1
             self.update_stats()
@@ -227,6 +225,7 @@ class SkillsPanel(IDrawable):
         u_s.max_exp = h_s.max_exp
         u_s.lvl = h_s.lvl
         self.hero.stats = u_s
+        self.hero.update_stats()
         self.close()
 
     def update(self):

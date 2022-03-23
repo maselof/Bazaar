@@ -78,13 +78,12 @@ class Stats:
         self.lvl = lvl
         self.skill_points = 0
         self.attack_speed = 1
-        self.movement_speed = 1
+        self.movement_speed = 0
         self.damage = 10
         self.dps = 10
 
 
 class Entity(GameObject, ILootable):
-    speed: int
     direction_vector: Vector2
     left_flip: bool
     inventory: GameContainer
@@ -116,7 +115,6 @@ class Entity(GameObject, ILootable):
                  ):
         super().__init__(name, animations_path, size, collision_rect_offset, True, scaling)
 
-        self.speed = 3
         self.direction_vector = Vector2(0, 0)
         self.left_flip = False
         self.direction = Direction.LEFT
@@ -142,6 +140,9 @@ class Entity(GameObject, ILootable):
                                                pygame.Color(255, 255, 255), 20, 250)}
         self.current_spectrum = self.spectra.get('get_damage')
 
+        self.stats = self.get_updated_stats(self.stats)
+        self.refresh()
+
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
         self.actions = {'idle': Action(self.action_idle, Animation(path, 'idle', True)),
@@ -166,7 +167,7 @@ class Entity(GameObject, ILootable):
     def action_walking(self, args: [object]):
         dir_v = game_cycle.check_collisions(self, args[0])
         self.direction_vector = dir_v
-        new_pos = self.get_position() + self.direction_vector * self.speed
+        new_pos = self.get_position() + self.direction_vector * self.stats.movement_speed
         self.set_position(new_pos)
 
     def build_attack_rects(self):
@@ -209,7 +210,7 @@ class Entity(GameObject, ILootable):
 
     def set_weapon(self, weapon: Weapon):
         self.weapon = weapon
-
+        self.update_stats()
         self.weapon.actions.get('walking').animation.speed = self.actions.get('walking').animation.speed
         self.weapon.actions.get('attacking').animation.speed = self.actions.get('attacking').animation.speed
 
@@ -287,9 +288,9 @@ class Entity(GameObject, ILootable):
         new_stats.max_stamina = stats.endurance * 10
         new_stats.max_mana = stats.intellect * 10
         new_stats.damage = self.weapon.damage * stats.strength / 10
-        new_stats.attack_speed = stats.dexterity / 10
+        new_stats.attack_speed = stats.dexterity / 10 * self.weapon.attack_speed_modifier
         new_stats.dps = round(new_stats.damage * new_stats.attack_speed, 1)
-        new_stats.movement_speed = stats.dexterity / 10
+        new_stats.movement_speed = int(stats.dexterity / 10 * game_logic.hero_base_speed)
         new_stats.hp = stats.hp
         new_stats.stamina = stats.stamina
         new_stats.mana = stats.mana
@@ -303,6 +304,12 @@ class Entity(GameObject, ILootable):
         new_stats.lvl = stats.lvl
         new_stats.skill_points = stats.skill_points
         return new_stats
+
+    def update_stats(self):
+        self.stats = self.get_updated_stats(self.stats)
+        self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
+        print(game_logic.g_entity_attacking_anim_speed * self.stats.attack_speed)
+        self.actions.get('attacking').animation.speed = game_logic.g_entity_attacking_anim_speed * self.stats.attack_speed
 
     def refresh(self):
         self.stats.hp = self.stats.max_hp

@@ -46,7 +46,7 @@ class Location(IDrawable):
             entity.stats.vitality += stats[2]
             entity.stats.endurance += stats[3]
             entity.stats.intellect += stats[4]
-            entity.stats = entity.get_updated_stats(entity.stats)
+            entity.update_stats()
             entity.refresh()
             hp_bar = HealthBar(entity)
             game_cycle.add_interface_element(hp_bar)
@@ -59,5 +59,3 @@ class Location(IDrawable):
 
     def draw(self, screen: pygame.Surface):
         pass
-        #pygame.draw.rect(screen, (0, 255, 0), Rect(self.position.x, self.position.y, self.size.x, self.size.y))
-        # print(self.position, self.size)

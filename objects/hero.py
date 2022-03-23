@@ -24,7 +24,6 @@ class Hero(Entity):
         self.inventory = HeroInventory()
         self.looting_object = None
         self.enable_random_actions = False
-        self.speed = 5
         self.ai.is_enemy = False
         self.init_effects()
 
@@ -37,13 +36,12 @@ class Hero(Entity):
     def action_walking(self, args: [object]):
         self.direction_vector = game_cycle.check_collisions(self, args[0][0])
         if len(self.effects):
+            self.stats.movement_speed = int(self.stats.dexterity / 10 * game_logic.hero_base_speed)
             if args[0][1] and self.stats.stamina > 0:
-                self.speed = game_logic.hero_run_speed
-            else:
-                self.speed = game_logic.hero_base_speed
+                self.stats.movement_speed = int(self.stats.movement_speed * 1.5)
 
-            self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.speed / game_logic.hero_base_speed
 
+            self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
             self.effects.get('Fatigue').enabled = args[0][1]
             self.effects.get('Breathing').enabled = False
 
@@ -80,13 +78,11 @@ class Hero(Entity):
                 old_weapon.set_equipped(True)
                 self.inventory.remove_item(old_weapon)
             if not new_weapon.is_equipped:
-                print('not equipped')
                 self.inventory.remove_item(new_weapon)
                 new_weapon.set_equipped(True)
                 self.inventory.add_item(new_weapon)
                 self.set_weapon(new_weapon)
             else:
-                print('equipped')
                 self.inventory.remove_item(new_weapon)
                 self.set_weapon(game_logic.get_item('fists'))
             self.inventory.update_panel()

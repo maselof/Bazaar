@@ -121,17 +121,9 @@ class GameContainer(IDrawable):
 
     def change_focus_item(self, index: int):
         new_index = self.focus_item_index + index
-        print(f'Container len: {len(self.container)}')
         if (new_index < 0) | (new_index >= len(self.container)):
             return
         self.focus_item_index = new_index
-        print(f'New focus index: {new_index}')
-        if self.get_focus_item():
-            print(f'Focus item: {self.get_focus_item().name}')
-            if isinstance(self.get_focus_item(), Weapon):
-                print(self.get_focus_item().is_equipped)
-        else:
-            print('Focus item is null')
 
     def get_item(self, index: int):
         if index < 0 or index >= len(self.container):
@@ -147,7 +139,6 @@ class GameContainer(IDrawable):
         for i in self.container:
             if i.name == item.name:
                 if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
-                    print(item.is_equipped, i.is_equipped)
                     continue
                 i.count += count
                 if item.bottom_panel_index != 0:
@@ -164,7 +155,6 @@ class GameContainer(IDrawable):
         for i in self.container:
             if i.name == item.name:
                 if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
-                    print(item.is_equipped, i.is_equipped)
                     continue
                 i.count -= count
 
@@ -249,7 +239,6 @@ class HeroInventory(GameContainer):
     def update_panel(self):
         self.inventory_panel = [None for i in range(game_logic.panel_items_count)]
         for i in self.container:
-            print(i.name, i.bottom_panel_index, i.count)
             if i.bottom_panel_index > 0 and i.count > 0:
                 self.inventory_panel[i.bottom_panel_index - 1] = i
 

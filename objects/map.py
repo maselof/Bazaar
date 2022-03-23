@@ -192,7 +192,6 @@ class Map(IDrawable):
 
     def remove_game_object(self, game_object: GameObject):
         frame_pos = to_frame_coordinates(game_object.get_center() - self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
-        print(frame_pos, game_object, game_object.name)
         self.get_frame_by_pos(frame_pos).game_objects.remove(game_object)
         self.all_game_objects.remove(game_object)
         self.update_visible_objects()
@@ -217,6 +216,7 @@ class Map(IDrawable):
                     self.remove_game_object(go)
 
     def move(self, vector: pygame.Vector2):
+
         for location in self.locations:
             location.move(vector)
         for map_frame in self.all_frames:

@@ -20,8 +20,8 @@ exp_gain = 100
 
 
 # screen
-g_screen_width = 1650
-g_screen_height = 1000
+g_screen_width = 1680
+g_screen_height = 1050
 g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
 # objects sizes
@@ -31,7 +31,6 @@ g_hero_width = 30
 g_hero_height = 70
 hero_take_radius = 85
 hero_base_speed = 5
-hero_run_speed = 7
 
 # entities
 g_entity_walking_anim_speed = 0.2
@@ -215,7 +214,6 @@ def init_game_objects():
 
 def fill_chest(chest: Chest, seed: int):
     items = list(ITEMS.values())
-    print(items)
     count = random.randint(0, seed)
     for i in range(count):
         item = items[random.randint(0, len(items) - 1)]

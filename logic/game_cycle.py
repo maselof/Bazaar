@@ -103,7 +103,6 @@ def event(screen, hero: Hero):
 
                             count = focus_item.count if switch_mode else 1
                             hero.inventory.remove_item(focus_item, count)
-                            print('GIVE ' + focus_item.name)
                             hero.looting_object.inventory.add_item(game_logic.get_item(focus_item.name), count)
                         else:
                             hero.use(focus_item)
@@ -127,7 +126,6 @@ def event(screen, hero: Hero):
                     if looted_item:
                         count = looted_item.count if switch_mode else 1
                         hero.looting_object.inventory.remove_item(looted_item, count)
-                        print('GET ' + looted_item.name)
                         hero.inventory.add_item(game_logic.get_item(looted_item.name), count)
             elif hero.context == Context.GAME:
                 if game_logic.NUMBER_KEYS.get(event.key) is not None:
@@ -177,6 +175,11 @@ def show_menu():
     pygame.init()
     pygame.font.init()
     pygame.display.set_caption("Игра")
+
+    # menu_music = pygame.mixer.Sound('res/sounds/menu.mp3')
+    # menu_music.set_volume(0.5)
+    # menu_music.play()
+
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     menu_bg = pygame.image.load("res/images/interface/menu/background.png")
     show = True
@@ -276,6 +279,11 @@ def run():
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
 
+    # pygame.mixer.stop()
+    # menu_music = pygame.mixer.Sound('res/sounds/background.mp3')
+    # menu_music.set_volume(0.2)
+    # menu_music.play()
+
     hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height), game_logic.entity_collision_offset)
     hero.update()
     hero_width, hero_height = hero.image.get_size()
@@ -322,6 +330,8 @@ def run():
     add_interface_element(skills_panel)
     add_interface_element(dialog_window)
     add_interface_element(message_log)
+
+    hero.gain_exp(10000)
 
     while True:
         clock.tick(game_logic.g_fps)

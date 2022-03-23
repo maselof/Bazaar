@@ -12,7 +12,7 @@ class Camera:
         self.hero = hero
 
     def update(self):
-        back_vector = self.hero.direction_vector * -1 * self.hero.speed
+        back_vector = self.hero.direction_vector * -1 * self.hero.stats.movement_speed
         if back_vector == Vector2(0, 0):
             return
         self.map.move(back_vector)

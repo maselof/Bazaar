@@ -6,6 +6,7 @@ from animation import Animation
 from item import Item
 from effect import Effect
 from image_wrapper import ImageWrapper
+from sound_wrapper import SoundWrapper
 
 
 class Weapon(Item):
@@ -46,6 +47,10 @@ class Weapon(Item):
                         'walking': Action(self.action_idle, Animation(path, 'walking')),
                         'attacking': Action(self.action_idle, Animation(path, 'attacking'))}
         self.current_action = self.actions['idle']
+
+    def sounds_init(self):
+        self.sounds = {'Slash': SoundWrapper(f'res/sounds/weapons/{self.name}/slash.mp3', True, 1),
+                       'Damage': SoundWrapper(f'res/sounds/weapons/{self.name}/damage.mp3', True, 1)}
 
     def icons_init(self, icons_path: str):
         self.not_equipped_icon = ImageWrapper('res/images/icons/weapons/' + self.name + '/1.png')

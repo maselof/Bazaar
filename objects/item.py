@@ -28,6 +28,11 @@ class Item(GameObject):
         self.icons_init(animations_path)
         self.bottom_panel_index = 0
 
+    def sounds_init(self):
+        pass
+        self.sounds = {}
+        #self.sounds = {'Use': SoundWrapper(f'res/sounds/objects/{self.name}/use.mp3')}
+
     def icons_init(self, icons_path: str):
         self.icon = ImageWrapper('res/images/icons/' + icons_path + self.name + '.png')
 

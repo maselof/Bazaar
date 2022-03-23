@@ -113,6 +113,7 @@ class Entity(GameObject, ILootable):
                  scaling: float = 1,
                  stats: Stats = Stats()
                  ):
+        self.weapon = game_logic.get_item('fists')
         super().__init__(name, animations_path, size, collision_rect_offset, True, scaling)
 
         self.direction_vector = Vector2(0, 0)
@@ -122,7 +123,7 @@ class Entity(GameObject, ILootable):
         self.stats = stats
         self.is_dead = False
 
-        self.weapon = game_logic.get_item('fists')
+
 
         self.attack_rects = []
         self.c_attack_rects = 5
@@ -150,6 +151,14 @@ class Entity(GameObject, ILootable):
                         'attacking': Action(self.action_attacking, Animation(path, 'attacking', True, False, game_logic.g_entity_attacking_anim_speed))}
         self.current_action = self.actions['idle']
 
+    def sounds_init(self):
+        self.sounds = {'Steps': SoundWrapper('res/sounds/entities/steps.mp3', False, 0.2)}
+
+    def scale_sounds(self, scaling: float):
+        super().scale_sounds(scaling)
+        if self.weapon:
+            self.weapon.scale_sounds(scaling)
+
     def set_position(self, point: pygame.Vector2):
         super().set_position(point)
         self.weapon.set_position(point)
@@ -163,12 +172,16 @@ class Entity(GameObject, ILootable):
     def action_idle(self, args: [object]):
         super().action_idle(args)
         self.direction_vector = Direction.STAND.value
+        if self.sounds:
+            self.sounds.get('Steps').stop()
 
     def action_walking(self, args: [object]):
         dir_v = game_cycle.check_collisions(self, args[0])
         self.direction_vector = dir_v
         new_pos = self.get_position() + self.direction_vector * self.stats.movement_speed
         self.set_position(new_pos)
+        if self.sounds:
+            self.sounds.get('Steps').play(-1)
 
     def build_attack_rects(self):
         self.attack_rects.clear()
@@ -195,10 +208,14 @@ class Entity(GameObject, ILootable):
         collided = game_cycle.get_collided_visible_objects(self, self.attack_rects)
         for go in collided:
             if isinstance(go, Entity):
-                go.get_damage(10)
+                self.weapon.sounds.get('Damage').play(0)
+                go.get_damage(int(self.stats.damage))
                 for effect in self.weapon.attack_effects:
                     effect.start()
                     go.effects.update({effect.name: effect})
+        if self.sounds:
+            self.sounds.get('Steps').stop()
+            self.weapon.sounds.get('Slash').play(0)
 
     def get_damage(self, damage: int):
         self.stats.hp = max(self.stats.hp - damage, 0)
@@ -308,7 +325,6 @@ class Entity(GameObject, ILootable):
     def update_stats(self):
         self.stats = self.get_updated_stats(self.stats)
         self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
-        print(game_logic.g_entity_attacking_anim_speed * self.stats.attack_speed)
         self.actions.get('attacking').animation.speed = game_logic.g_entity_attacking_anim_speed * self.stats.attack_speed
 
     def refresh(self):

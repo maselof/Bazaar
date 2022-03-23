@@ -26,12 +26,22 @@ class Hero(Entity):
         self.enable_random_actions = False
         self.ai.is_enemy = False
         self.init_effects()
+        self.scale_sounds(1)
 
     def init_effects(self):
         self.effects.update({'Fatigue': game_logic.EFFECTS.get('Fatigue'),
                              'Breathing': game_logic.EFFECTS.get('Breathing')})
         self.effects.get('Fatigue').start()
         self.effects.get('Breathing').start()
+
+    def sounds_init(self):
+        super().sounds_init()
+        self.sounds.update({'OpenInv': SoundWrapper('res/sounds/entities/hero/openInv.mp3', True, 1),
+                            'CloseInv': SoundWrapper('res/sounds/entities/hero/closeInv.mp3', True, 1)})
+
+    def set_weapon(self, weapon: Weapon):
+        super().set_weapon(weapon)
+        self.weapon.scale_sounds(1)
 
     def action_walking(self, args: [object]):
         self.direction_vector = game_cycle.check_collisions(self, args[0][0])
@@ -44,6 +54,8 @@ class Hero(Entity):
             self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
             self.effects.get('Fatigue').enabled = args[0][1]
             self.effects.get('Breathing').enabled = False
+        if self.sounds:
+            self.sounds.get('Steps').play(-1)
 
     def action_idle(self, args: [object]):
         super().action_idle(args)
@@ -143,5 +155,9 @@ class Hero(Entity):
         super().update()
         self.inventory.show_frame = self.context == Context.INVENTORY
         self.check_looting_object_distance()
+
+    def draw(self, screen: pygame.Surface):
+        super().draw(screen)
+        # pygame.draw.circle(screen, (0, 255, 0), self.get_center(), game_logic.hero_sounds_range)
 
 

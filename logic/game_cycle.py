@@ -167,8 +167,10 @@ def event(screen, hero: Hero):
                         hero.inventory.close()
                     else:
                         hero.change_context(Context.GAME)
+                    hero.sounds.get('CloseInv').play(0)
                 else:
                     hero.change_context(Context.INVENTORY)
+                    hero.sounds.get('OpenInv').play(0)
 
 
 def show_menu():
@@ -176,9 +178,9 @@ def show_menu():
     pygame.font.init()
     pygame.display.set_caption("Игра")
 
-    # menu_music = pygame.mixer.Sound('res/sounds/menu.mp3')
-    # menu_music.set_volume(0.5)
-    # menu_music.play()
+    menu_music = pygame.mixer.Sound('res/sounds/general/menu.mp3')
+    menu_music.set_volume(0.5)
+    menu_music.play()
 
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     menu_bg = pygame.image.load("res/images/interface/menu/background.png")
@@ -279,10 +281,10 @@ def run():
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
 
-    # pygame.mixer.stop()
-    # menu_music = pygame.mixer.Sound('res/sounds/background.mp3')
-    # menu_music.set_volume(0.2)
-    # menu_music.play()
+    pygame.mixer.stop()
+    menu_music = pygame.mixer.Sound('res/sounds/general/background.mp3')
+    menu_music.set_volume(0.2)
+    menu_music.play()
 
     hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height), game_logic.entity_collision_offset)
     hero.update()

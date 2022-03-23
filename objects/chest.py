@@ -21,6 +21,10 @@ class Chest(GameObject, ILootable):
                         'open': Action(self.action_open, Animation(path, 'open', self.directional))}
         self.current_action = self.actions['idle']
 
+    def sounds_init(self):
+        self.sounds = {'Open': SoundWrapper(f'res/sounds/objects/chests/{self.name}/open.mp3', True, 0.1),
+                       'Close': SoundWrapper(f'res/sounds/objects/chests/{self.name}/close.mp3', True, 0.1)}
+
     def action_open(self, args: [object]):
         pass
 
@@ -28,8 +32,10 @@ class Chest(GameObject, ILootable):
         self.is_open = True
         self.inventory.open()
         self.set_action('open', None)
+        self.sounds.get('Open').play(0)
 
     def close(self):
         self.is_open = False
         self.inventory.close()
         self.set_action('idle', None)
+        self.sounds.get('Close').play(0)

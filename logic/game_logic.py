@@ -31,6 +31,7 @@ g_hero_width = 30
 g_hero_height = 70
 hero_take_radius = 85
 hero_base_speed = 5
+hero_sounds_range = 500
 
 # entities
 g_entity_walking_anim_speed = 0.2

@@ -234,6 +234,17 @@ class Map(IDrawable):
                     break
         return collided
 
+    def update_sounds(self):
+        for go in self.visible_game_objects:
+            if go == self.hero:
+                continue
+            distance = game_cycle.get_distance(go, self.hero)
+            if distance >= game_logic.hero_sounds_range:
+                continue
+            k = 1 - distance / game_logic.hero_sounds_range
+            print(go.name, distance, k)
+            go.scale_sounds(k)
+
     def update(self):
         self.check_to_remove()
         f2 = self.check_objects_transitions()
@@ -248,6 +259,8 @@ class Map(IDrawable):
 
         for map_frame in self.visible_frames:
             map_frame.update()
+
+        self.update_sounds()
 
     def draw(self, screen: pygame.Surface):
         for map_frame in self.visible_frames:

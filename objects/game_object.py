@@ -1,6 +1,7 @@
 from action import *
 from animation import *
 from idrawable import *
+from sound_wrapper import SoundWrapper
 
 
 class GameObject(IDrawable):
@@ -16,6 +17,7 @@ class GameObject(IDrawable):
     current_action: Action
     direction: Direction
     directional: bool
+    sounds: {str: SoundWrapper}
 
     def __init__(self,
                  name: str,
@@ -39,11 +41,20 @@ class GameObject(IDrawable):
         self.collision_rect_offset = collision_rect_offset
         col_pos = pygame.Vector2(self.rect.x, self.rect.y) + collision_rect_offset
         self.collision_rect = pygame.Rect(col_pos.x, col_pos.y, size.x, size.y)
+        self.sounds_init()
+        self.scale_sounds(0)
 
     def animations_init(self):
         path = 'res/animations/objects/' + self.animations_path + self.name + '/'
         self.actions = {'idle': Action(self.action_idle, Animation(path, 'idle', self.directional))}
         self.current_action = self.actions['idle']
+
+    def sounds_init(self):
+        self.sounds = {'Idle': SoundWrapper(None)}
+
+    def scale_sounds(self, scaling: float):
+        for sound in self.sounds.values():
+            sound.set_volume(sound.volume * scaling)
 
     def set_position(self, point: pygame.Vector2):
         self.rect.x, self.rect.y = point

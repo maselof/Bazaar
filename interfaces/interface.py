@@ -2,6 +2,7 @@ import game_logic
 from inventory import *
 from hero import *
 from chest import Chest
+from trader import Trader
 
 
 class Interface(IDrawable):
@@ -44,6 +45,8 @@ class DialogWindow(IDrawable):
             self.message = 'Take (E)'
         elif isinstance(go, Chest):
             self.message = 'Loot (E)'
+        elif isinstance(go, Trader):
+            self.message = 'Trade (E)'
         else:
             self.show = False
 

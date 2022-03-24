@@ -6,6 +6,7 @@ from camera import *
 from inventory import HeroInventory
 from copy import copy
 from chest import Chest
+from trader import Trader
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -100,8 +101,11 @@ def event(screen, hero: Hero):
                         if hero.looting_object and hero.looting_object.inventory.is_open:
                             if isinstance(focus_item, Weapon) and focus_item.is_equipped:
                                 continue
-
                             count = focus_item.count if switch_mode else 1
+                            if isinstance(hero.looting_object, Trader):
+                                if focus_item.name == 'coin':
+                                    continue
+                                hero.inventory.add_item(game_logic.get_item('coin'), count * focus_item.cost)
                             hero.inventory.remove_item(focus_item, count)
                             hero.looting_object.inventory.add_item(game_logic.get_item(focus_item.name), count)
                         else:
@@ -125,6 +129,11 @@ def event(screen, hero: Hero):
                     looted_item = hero.looting_object.inventory.get_focus_item()
                     if looted_item:
                         count = looted_item.count if switch_mode else 1
+                        if isinstance(hero.looting_object, Trader):
+                            gold = count * looted_item.cost
+                            if gold > hero.get_coins_count():
+                                continue
+                            hero.inventory.remove_item(game_logic.get_item('coin'), gold)
                         hero.looting_object.inventory.remove_item(looted_item, count)
                         hero.inventory.add_item(game_logic.get_item(looted_item.name), count)
             elif hero.context == Context.GAME:

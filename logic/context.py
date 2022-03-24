@@ -7,3 +7,4 @@ class Context(Enum):
     LOOTING = 2
     MENU = 3
     SKILLS = 4
+    TRADING = 5

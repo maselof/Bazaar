@@ -4,6 +4,7 @@ from inventory import HeroInventory
 from inventory import ILootable
 from context import Context
 from chest import Chest
+from trader import Trader
 
 
 class Hero(Entity):
@@ -63,6 +64,12 @@ class Hero(Entity):
             self.effects.get('Fatigue').enabled = False
             self.effects.get('Breathing').enabled = True
 
+    def get_coins_count(self):
+        for item in self.inventory.container:
+            if item.name == 'coin':
+                return item.count
+        return 0
+
     def check_looting_object_distance(self):
         if not self.looting_object:
             return
@@ -75,6 +82,9 @@ class Hero(Entity):
             self.looting_object = None
 
     def use(self, item: Item):
+        if item.name == 'coin':
+            return
+
         for effect in item.effects:
             self.effects.update({effect.name: effect})
             effect.start()

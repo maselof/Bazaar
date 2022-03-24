@@ -200,7 +200,7 @@ class Map(IDrawable):
         for go in self.visible_game_objects:
             if isinstance(go, Entity) and go.is_dead:
                 bag = game_logic.get_game_object('bag')
-                game_logic.fill_chest(bag, 5)
+                game_logic.fill_chest(bag, go.stats.lvl)
                 if go.weapon.name != 'fists':
                     bag.inventory.add_item(go.weapon)
 
@@ -208,8 +208,8 @@ class Map(IDrawable):
                 game_cycle.add_interface_element(bag.inventory)
                 self.add_game_object(bag)
                 self.remove_game_object(go)
-                self.hero.gain_exp(go.stats.exp)
-                game_cycle.message_log.add_message(f'Gain {go.stats.exp} xp')
+                self.hero.gain_exp(go.stats.max_exp)
+                game_cycle.message_log.add_message(f'Gain {go.stats.max_exp} xp')
             if isinstance(go, Chest):
                 if go.name == 'bag' and len(go.inventory.container) == 0:
                     go.inventory.close()
@@ -242,7 +242,6 @@ class Map(IDrawable):
             if distance >= game_logic.hero_sounds_range:
                 continue
             k = 1 - distance / game_logic.hero_sounds_range
-            print(go.name, distance, k)
             go.scale_sounds(k)
 
     def update(self):

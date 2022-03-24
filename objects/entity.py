@@ -316,9 +316,9 @@ class Entity(GameObject, ILootable):
         new_stats.vitality = stats.vitality
         new_stats.endurance = stats.endurance
         new_stats.intellect = stats.intellect
-        new_stats.max_exp = stats.max_exp
         new_stats.exp = stats.exp
         new_stats.lvl = stats.lvl
+        new_stats.max_exp = stats.max_exp
         new_stats.skill_points = stats.skill_points
         return new_stats
 

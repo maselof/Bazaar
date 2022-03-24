@@ -10,6 +10,7 @@ class Item(GameObject):
     cost: int
     description: str
     bottom_panel_index: int
+    trading_count: int
 
     def __init__(self,
                  name: str,
@@ -19,7 +20,8 @@ class Item(GameObject):
                  scaling: float,
                  effects: [Effect],
                  cost: int,
-                 description: str):
+                 description: str,
+                 trading_count: int):
         super().__init__(name, animations_path, size, Vector2(0, 0), directional, scaling)
         self.effects = effects
         self.count = 1
@@ -27,6 +29,7 @@ class Item(GameObject):
         self.description = description
         self.icons_init(animations_path)
         self.bottom_panel_index = 0
+        self.trading_count = trading_count
 
     def sounds_init(self):
         pass

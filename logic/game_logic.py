@@ -9,6 +9,7 @@ from location import Location
 from game_object import GameObject
 from entity import *
 from chest import Chest
+from trader import Trader
 
 
 # general
@@ -20,8 +21,8 @@ exp_gain = 100
 
 
 # screen
-g_screen_width = 1680
-g_screen_height = 1050
+g_screen_width = 1920
+g_screen_height = 1080
 g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
 # objects sizes
@@ -153,7 +154,7 @@ def breathing(entity: object, value: float):
 
 EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 10, False),
            'Bleeding': Effect('Bleeding', bleeding, 300, 60, 10, False),
-           'Fatigue': Effect('Fatigue', fatigue, 60, 60, 5, True),
+           'Fatigue': Effect('Fatigue', fatigue, 30, 30, 5, True),
            'Breathing': Effect('Breathing', breathing, 60, 60, 5, True)}
 
 
@@ -167,17 +168,18 @@ ITEMS = {}
 
 
 def init_items():
-    ITEMS.update({'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20, 'Weak healing potion. Increase your hp on 10 points.'),
-                  'fists': Weapon('fists', 10, 1, 50, [], [], 0, ''),
-                  'cudgel': Weapon('cudgel', 40, 0.7, 80, [], [], 100, 'The most common weapon among bandits.'),
-                  'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.')})
+    ITEMS.update({'coin': Item('coin', 'general/', Vector2(0, 0), False, 1, [], 1, 'Gold coin.', 0),
+                  'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20, 'Weak healing potion. Increase your hp on 10 points.', 50),
+                  'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0),
+                  'cudgel': Weapon('cudgel', 40, 0.7, 80, [], [], 100, 'The most common weapon among bandits.', 10),
+                  'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.', 10)})
 
 
 def get_item(id: str):
     item = ITEMS.get(id)
     if isinstance(item, Weapon):
-        return Weapon(item.name, item.damage, item.attack_speed_modifier, item.attack_range, item.effects, item.attack_effects, item.cost, item.description)
-    return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects, item.cost, item.description)
+        return Weapon(item.name, item.damage, item.attack_speed_modifier, item.attack_range, item.effects, item.attack_effects, item.cost, item.description, item.trading_count)
+    return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects, item.cost, item.description, item.trading_count)
 
 
 def get_weapons():
@@ -220,6 +222,8 @@ def fill_chest(chest: Chest, seed: int):
         item = items[random.randint(0, len(items) - 1)]
         if item.name != 'fists':
             chest.inventory.add_item(item)
+    gold = random.randint(0, seed * 100)
+    chest.inventory.add_item(game_logic.get_item('coin'), gold)
 
 
 def get_game_object(name: str) -> GameObject:
@@ -228,7 +232,6 @@ def get_game_object(name: str) -> GameObject:
         cgo = Chest(go.name, go.animations_path, go.size, go.collision_rect_offset)
         return cgo
     return GameObject(go.name, go.animations_path, go.size, go.collision_rect_offset, go.directional, go.scaling)
-
 
 
 LOCATIONS = {}
@@ -243,8 +246,9 @@ def init_locations():
     LOCATIONS.update({0: get_bandit_camp,
                       1: get_church,
                       2: get_forest,
-                      3: get_meadow})
-    LOCATIONS_CHANCES.extend([10, 10, 40, 40])
+                      3: get_meadow,
+                      4: get_trading_counter})
+    LOCATIONS_CHANCES.extend([5, 5, 40, 40, 10])
 
 
 def get_bandit_camp():
@@ -264,6 +268,12 @@ def get_church():
     church_building.set_position(Vector2(100, 50))
     church_location = Location([church_building], ['skeleton', 'skeleton'], Vector2(0, 0), Vector2(800, 1000))
     return church_location
+
+
+def get_trading_counter():
+    trader = Trader(Vector2(148, 16), Vector2(10, 85))
+    location = Location([trader], [], Vector2(0, 0), Vector2(200, 200))
+    return location
 
 
 def get_forest():

@@ -28,8 +28,9 @@ class Weapon(Item):
                  hero_effects: [Effect],
                  attack_effects: [Effect],
                  cost: int,
-                 description: str):
-        super().__init__(name, 'weapons/', Vector2(0, 0), True, 1, hero_effects, cost, description)
+                 description: str,
+                 trading_count: int):
+        super().__init__(name, 'weapons/', Vector2(0, 0), True, 1, hero_effects, cost, description, trading_count)
         self.attack_range = attack_range
         self.attack_effects = attack_effects
         self.damage = damage

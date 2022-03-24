@@ -1,3 +1,4 @@
+import pygame
 from pygame import Vector2
 from pygame import Surface
 from pygame import Rect
@@ -8,19 +9,16 @@ from pygame import transform
 class ImageWrapper:
     image: Surface
     rect: Rect
+    path: str
+    size: Vector2
 
     def __init__(self,
                  path: str = None,
-                 surface: Surface = None):
-        if path:
-            self.image = image.load(path)
-        elif surface:
-            self.image = surface
-        else:
-            self.image = Surface(0, 0)
-
-        width, height = self.image.get_size()
-        self.rect = Rect(0, 0, width, height)
+                 size: Vector2 = None):
+        self.path = path
+        self.image = image.load(path) if path else Surface([size.x, size.y], pygame.SRCALPHA)
+        self.size = size if size else Vector2(self.image.get_size())
+        self.rect = Rect(0, 0, self.size.x, self.size.y)
 
     def set_position(self, point: Vector2):
         self.rect.x, self.rect.y = point
@@ -44,3 +42,10 @@ class ImageWrapper:
 
     def draw(self, screen: Surface):
         screen.blit(self.image, self.rect)
+
+    def __getstate__(self):
+        return self.path, self.size, self.rect
+
+    def __setstate__(self, state):
+        self.path, self.size, self.rect = state
+        self.image = image.load(self.path)

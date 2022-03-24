@@ -1,12 +1,4 @@
-import random
-
-from weapon import Weapon
-from item import Item
-from pygame import Vector2
-from effect import Effect
-import pygame
 from location import Location
-from game_object import GameObject
 from entity import *
 from chest import Chest
 from trader import Trader
@@ -164,13 +156,12 @@ def get_effect(id: str) -> Effect:
 
 
 # id: GameObject
-ITEMS = {}
+ITEMS = {'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0)}
 
 
 def init_items():
     ITEMS.update({'coin': Item('coin', 'general/', Vector2(0, 0), False, 1, [], 1, 'Gold coin.', 0),
                   'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20, 'Weak healing potion. Increase your hp on 10 points.', 50),
-                  'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0),
                   'cudgel': Weapon('cudgel', 40, 0.7, 80, [], [], 100, 'The most common weapon among bandits.', 10),
                   'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.', 10)})
 

@@ -1,6 +1,4 @@
 from pygame import Vector2
-
-import item
 from action import Action
 from animation import Animation
 from item import Item

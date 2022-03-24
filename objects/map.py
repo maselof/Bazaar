@@ -1,6 +1,5 @@
 import game_cycle
 import game_logic
-import interface
 from idrawable import *
 from image_wrapper import ImageWrapper
 from pygame import Vector2
@@ -60,18 +59,14 @@ class Map(IDrawable):
 
     locations: [Location]
 
-    def __init__(self):
-        game_logic.init_items()
-        game_logic.init_game_objects()
-        game_logic.init_entities()
-        game_logic.init_locations()
+    def __init__(self, hero):
         self.locations = []
         self.all_frames = [MapFrame('res/images/map/backgrounds/grass.png', Vector2(0, 0))]
         self.central_frame = self.get_frame_by_pos(Vector2(0, 0))
         self.visible_frames = []
         self.all_game_objects = []
         self.visible_game_objects = []
-
+        self.hero = hero
         self.change_central_frame(self.central_frame)
 
     def get_frame_by_pos(self, position: Vector2):
@@ -205,11 +200,11 @@ class Map(IDrawable):
                     bag.inventory.add_item(go.weapon)
 
                 bag.set_position(go.get_center())
-                game_cycle.add_interface_element(bag.inventory)
+                game_cycle.game_data.game_interface.add_element(bag.inventory)
                 self.add_game_object(bag)
                 self.remove_game_object(go)
                 self.hero.gain_exp(go.stats.max_exp)
-                game_cycle.message_log.add_message(f'Gain {go.stats.max_exp} xp')
+                game_cycle.game_data.message_log.add_message(f'Gain {go.stats.max_exp} xp')
             if isinstance(go, Chest):
                 if go.name == 'bag' and len(go.inventory.container) == 0:
                     go.inventory.close()
@@ -234,11 +229,65 @@ class Map(IDrawable):
                     break
         return collided
 
+    def check_collisions(self, game_object: GameObject, vector: Vector2) -> Vector2:
+        dir_vector = vector
+        offset = Vector2(game_logic.collision_offset * (1 if dir_vector.x > 0 else -1 if dir_vector.x < 0 else 0),
+                         game_logic.collision_offset * (1 if dir_vector.y > 0 else -1 if dir_vector.y < 0 else 0))
+        collision_rect = game_object.collision_rect.copy()
+        for go in self.visible_game_objects:
+            if go == game_object:
+                continue
+            if dir_vector == Vector2(0, 0):
+                return dir_vector
+            if go.collision_rect.colliderect(collision_rect.move(vector.x + offset.x, 0)):
+                dir_vector.x = 0
+            if go.collision_rect.colliderect(collision_rect.move(0, vector.y + offset.y)):
+                dir_vector.y = 0
+            if dir_vector == Vector2(1, 1) and go.collision_rect.colliderect(
+                    collision_rect.move(vector.x + offset.x, vector.y + offset.y)):
+                dir_vector = Vector2(0, 0)
+        return dir_vector
+
+    def get_distance(self, object1: GameObject, object2: GameObject):
+        return object1.get_center().distance_to(object2.get_center())
+
+    def get_nearest_object(self, game_object: GameObject) -> [GameObject, float]:
+        pos = game_object.get_center()
+
+        min_distance = 1000000
+        nearest_object = None
+        if self.hero != game_object:
+            min_distance = pos.distance_to(self.hero.get_center())
+            nearest_object = self.hero
+
+        for go in self.visible_game_objects:
+            if go == game_object:
+                continue
+
+            go_pos = go.get_center()
+            distance = go_pos.distance_to(pos)
+            if distance < min_distance:
+                min_distance = distance
+                nearest_object = go
+        return [nearest_object, min_distance]
+
+    def get_collided_visible_objects(self, game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
+        collided = []
+        for go in self.visible_game_objects:
+            if go == game_object:
+                continue
+
+            for r in area:
+                if go.collision_rect.colliderect(r):
+                    collided.append(go)
+                    break
+        return collided
+
     def update_sounds(self):
         for go in self.visible_game_objects:
             if go == self.hero:
                 continue
-            distance = game_cycle.get_distance(go, self.hero)
+            distance = game_cycle.game_data.game_map.get_distance(go, self.hero)
             if distance >= game_logic.hero_sounds_range:
                 continue
             k = 1 - distance / game_logic.hero_sounds_range

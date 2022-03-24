@@ -2,6 +2,7 @@ from action import *
 from animation import *
 from idrawable import *
 from sound_wrapper import SoundWrapper
+from image_wrapper import ImageWrapper
 
 
 class GameObject(IDrawable):

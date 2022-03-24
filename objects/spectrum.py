@@ -17,7 +17,7 @@ class Spectrum(IDrawable):
                  color: pygame.Color,
                  speed: float,
                  border: int):
-        self.surface = ImageWrapper(surface=pygame.Surface((size.x, size.y), pygame.SRCALPHA))
+        self.surface = ImageWrapper(size=size)
         self.surface.set_size(size)
         self.surface.set_position(position)
         self.size = size

@@ -1,10 +1,8 @@
-import game_logic
 from entity import *
 from inventory import HeroInventory
 from inventory import ILootable
 from context import Context
 from chest import Chest
-from trader import Trader
 
 
 class Hero(Entity):
@@ -45,12 +43,11 @@ class Hero(Entity):
         self.weapon.scale_sounds(1)
 
     def action_walking(self, args: [object]):
-        self.direction_vector = game_cycle.check_collisions(self, args[0][0])
+        self.direction_vector = game_cycle.game_data.game_map.check_collisions(self, args[0][0])
         if len(self.effects):
             self.stats.movement_speed = int(self.stats.dexterity / 10 * game_logic.hero_base_speed)
             if args[0][1] and self.stats.stamina > 0:
                 self.stats.movement_speed = int(self.stats.movement_speed * 1.5)
-
 
             self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
             self.effects.get('Fatigue').enabled = args[0][1]
@@ -73,7 +70,7 @@ class Hero(Entity):
     def check_looting_object_distance(self):
         if not self.looting_object:
             return
-        if game_cycle.get_distance(self, self.looting_object) > self.interact_radius:
+        if game_cycle.game_data.game_map.get_distance(self, self.looting_object) > self.interact_radius:
             if self.inventory.is_open:
                 self.change_context(Context.INVENTORY)
             else:
@@ -129,7 +126,7 @@ class Hero(Entity):
         self.context = context
 
     def interact(self):
-        object, distance = game_cycle.get_nearest_object(self)
+        object, distance = game_cycle.game_data.game_map.get_nearest_object(self)
         if distance > self.interact_radius:
             object = None
             # return
@@ -137,8 +134,8 @@ class Hero(Entity):
         # print(object)
         if isinstance(object, Item):
             self.inventory.add_item(object, object.count)
-            game_cycle.game_map.remove_game_object(object)
-            game_cycle.message_log.add_message(f'Looted {object.name} x{object.count}')
+            game_cycle.game_data.game_map.remove_game_object(object)
+            game_cycle.game_data.message_log.add_message(f'Looted {object.name} x{object.count}')
         elif isinstance(object, Chest):
             if (self.looting_object is not None) and self.looting_object.inventory.is_open:
                 self.looting_object.inventory.close()

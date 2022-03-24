@@ -1,4 +1,3 @@
-import direction
 import game_logic
 from pygame.math import Vector2
 from item import *
@@ -176,7 +175,7 @@ class Entity(GameObject, ILootable):
             self.sounds.get('Steps').stop()
 
     def action_walking(self, args: [object]):
-        dir_v = game_cycle.check_collisions(self, args[0])
+        dir_v = game_cycle.game_data.game_map.check_collisions(self, args[0])
         self.direction_vector = dir_v
         new_pos = self.get_position() + self.direction_vector * self.stats.movement_speed
         self.set_position(new_pos)
@@ -205,7 +204,7 @@ class Entity(GameObject, ILootable):
         self.direction_vector = Direction.STAND.value
         if not self.current_action.animation.finished:
             return
-        collided = game_cycle.get_collided_visible_objects(self, self.attack_rects)
+        collided = game_cycle.game_data.game_map.get_collided_visible_objects(self, self.attack_rects)
         for go in collided:
             if isinstance(go, Entity):
                 self.weapon.sounds.get('Damage').play(0)
@@ -293,7 +292,7 @@ class Entity(GameObject, ILootable):
             self.set_action('attacking', None)
 
     def do_ai(self):
-        object, distance = game_cycle.get_nearest_object(self)
+        object, distance = game_cycle.game_data.game_map.get_nearest_object(self)
         if isinstance(object, Entity) and self.ai.is_enemy != object.ai.is_enemy and distance <= self.ai.agro_radius:
             self.attack_entity(object, distance)
         else:

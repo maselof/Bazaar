@@ -2,7 +2,6 @@ from hero import *
 
 
 class Camera:
-    #map
     hero: Hero
 
     def __init__(self,

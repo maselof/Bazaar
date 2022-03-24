@@ -1,5 +1,3 @@
-import game_logic
-from inventory import *
 from hero import *
 from chest import Chest
 from trader import Trader
@@ -10,6 +8,10 @@ class Interface(IDrawable):
 
     def __init__(self):
         self.elements = []
+
+    def add_element(self, element: IDrawable):
+        self.elements.append(element)
+        self.elements.sort(key=lambda el: el.priority)
 
     def update(self):
         for el in self.elements:
@@ -36,7 +38,7 @@ class DialogWindow(IDrawable):
         self.priority = game_logic.dialog_window_priority
 
     def update(self):
-        go, distance = game_cycle.get_nearest_object(self.hero)
+        go, distance = game_cycle.game_data.game_map.get_nearest_object(self.hero)
         if not go or distance > self.hero.interact_radius:
             self.show = False
             return

@@ -1,5 +1,3 @@
-from idrawable import IDrawable
-from game_object import *
 from entity import *
 from interface import HealthBar
 
@@ -50,8 +48,8 @@ class Location(IDrawable):
             entity.update_stats()
             entity.refresh()
             hp_bar = HealthBar(entity)
-            game_cycle.add_interface_element(hp_bar)
-            game_cycle.add_interface_element(entity.inventory)
+            game_cycle.game_data.game_interface.add_element(hp_bar)
+            game_cycle.game_data.game_interface.add_element(entity.inventory)
             entities.append(entity)
         return entities
 

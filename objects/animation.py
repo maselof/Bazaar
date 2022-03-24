@@ -1,13 +1,12 @@
 import pygame
 import os
-from typing import Dict
 from direction import *
 
 
 class Animation:
     path: str
     name: str
-    images: {}
+    images: []
     speed: float
     frame: float
     finished: bool
@@ -62,3 +61,10 @@ class Animation:
 
     def update(self, direction: Direction):
         self.frame += self.speed
+
+    def __getstate__(self):
+        return self.path, self.name, self.speed, self.frame, self.finished, self.interruptible, self.directional
+
+    def __setstate__(self, state):
+        self.path, self.name, self.speed, self.frame, self.finished, self.interruptible, self.directional = state
+        self.__prepare_images()

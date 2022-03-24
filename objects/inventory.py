@@ -4,12 +4,13 @@ from pygame import Vector2
 from image_wrapper import ImageWrapper
 from idrawable import IDrawable
 from weapon import Weapon
+from item import Item
 
 
 class DescriptionWindow(IDrawable):
     bg_pos: Vector2
     size: Vector2
-    item: game_logic.Item
+    item: Item
     icon_frame: ImageWrapper
 
     def __init__(self):
@@ -57,7 +58,7 @@ class DescriptionWindow(IDrawable):
 
         self.icon_frame.set_position(second_layer_pos)
         self.icon_frame.draw(screen)
-        icon = ImageWrapper(surface=self.item.icon.image.copy())
+        icon = ImageWrapper(self.item.icon.path, self.item.icon.size)
         icon.set_position(second_layer_pos + Vector2(1, 1) * game_logic.dscw_frame_icon_offset)
         icon.draw(screen)
 
@@ -90,7 +91,7 @@ class DescriptionWindow(IDrawable):
 
 
 class GameContainer(IDrawable):
-    container: [game_logic.Item]
+    container: [Item]
     bg_pos: Vector2
     is_open: bool
     show_frame: bool
@@ -135,7 +136,7 @@ class GameContainer(IDrawable):
             return None
         return self.container[self.focus_item_index]
 
-    def add_item(self, item: game_logic.Item, count: int = 1):
+    def add_item(self, item: Item, count: int = 1):
         for i in self.container:
             if i.name == item.name:
                 if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
@@ -151,7 +152,7 @@ class GameContainer(IDrawable):
         new_item.count = count
         self.container.append(new_item)
 
-    def remove_item(self, item: game_logic.Item, count: int = 1):
+    def remove_item(self, item: Item, count: int = 1):
         for i in self.container:
             if i.name == item.name:
                 if isinstance(item, Weapon) and isinstance(i, Weapon) and item.is_equipped != i.is_equipped:
@@ -215,7 +216,7 @@ class GameContainer(IDrawable):
 
 
 class HeroInventory(GameContainer):
-    inventory_panel = [game_logic.Item]
+    inventory_panel = [Item]
 
     def __init__(self):
         super().__init__()
@@ -242,7 +243,7 @@ class HeroInventory(GameContainer):
             if i.bottom_panel_index > 0 and i.count > 0:
                 self.inventory_panel[i.bottom_panel_index - 1] = i
 
-    def set_panel_index(self, item: game_logic.Item, index: int):
+    def set_panel_index(self, item: Item, index: int):
         for i in self.container:
             if i.bottom_panel_index == index:
                 i.bottom_panel_index = item.bottom_panel_index
@@ -262,7 +263,7 @@ class HeroInventory(GameContainer):
             el_pos = first_el_pos + Vector2(i * (game_logic.panel_items_size + game_logic.panel_items_offset), 0)
             item = self.inventory_panel[i]
             if item:
-                icon = ImageWrapper(surface=item.icon.image.copy())
+                icon = ImageWrapper(item.icon.path, item.icon.size)
                 icon.set_position(el_pos)
                 icon.draw(screen)
                 count = str(item.count)

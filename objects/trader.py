@@ -1,6 +1,6 @@
-import game_cycle
 import game_logic
 from chest import *
+import game_cycle
 
 
 class Trader(Chest):
@@ -9,8 +9,8 @@ class Trader(Chest):
                  size: Vector2,
                  collision_rect_offset: Vector2):
         super().__init__('trading_counter', 'buildings/', size, collision_rect_offset)
-        game_cycle.add_interface_element(self.inventory)
         self.refresh_wares()
+        game_cycle.game_data.game_interface.add_element(self.inventory)
 
     def sounds_init(self):
         self.sounds = {'Open': SoundWrapper(None, True, 0.1),

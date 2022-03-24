@@ -1,21 +1,83 @@
 import sys
-import pygame
 from map import *
 import interface
 from camera import *
-from inventory import HeroInventory
-from copy import copy
-from chest import Chest
 from trader import Trader
+import pickle
+
+
+class GameData:
+    hero: Hero
+    game_interface: interface.Interface
+    game_map: Map
+    camera: Camera
+    message_log: interface.MessageLog
+    skills_panel: interface.SkillsPanel
+    dialog_window: interface.DialogWindow
+
+    def __init__(self):
+        pass
+
+    def init(self):
+        self.game_interface = interface.Interface()
+        self.create_hero()
+        self.message_log = interface.MessageLog()
+        self.skills_panel = interface.SkillsPanel(self.hero)
+        self.dialog_window = interface.DialogWindow(self.hero)
+
+        game_logic.init_items()
+        game_logic.init_game_objects()
+        game_logic.init_entities()
+        game_logic.init_locations()
+
+        hero_weapon = game_logic.get_item('fists')
+        self.hero.set_weapon(hero_weapon)
+
+        self.game_map = Map(self.hero)
+        self.camera = Camera(self.game_map, self.hero)
+
+        self.game_interface.add_element(interface.HeroBars(self.hero))
+        self.game_interface.add_element(self.hero.inventory)
+        self.game_interface.add_element(self.message_log)
+        self.game_interface.add_element(self.skills_panel)
+        self.game_interface.add_element(self.dialog_window)
+        self.game_map.add_game_object(self.hero)
+
+    def create_hero(self):
+        hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height), game_logic.entity_collision_offset)
+        hero.update()
+        hero_width, hero_height = hero.image.get_size()
+        center = Vector2((game_logic.g_screen_width - hero_width) // 2,
+                         (game_logic.g_screen_height - hero_height) // 2)
+        hero.set_position(center)
+        self.hero = hero
+
+    def update(self):
+        self.game_map.update()
+        self.camera.update()
+        self.game_interface.update()
+
+    def draw(self, screen: pygame.Surface):
+        self.game_map.draw(screen)
+        self.game_interface.draw(screen)
+
+
+game_data = GameData()
+
+
+def save(hero):
+    with open("savegame.SAV", "wb") as f:
+        pickle.dump(hero, f)
+
+
+def load() -> Hero:
+    with open("savegame.SAV", "rb") as f:
+        return pickle.load(f)
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
     for i in range(queue.count(direction)):
         queue.remove(direction)
-
-
-def draw(screen: pygame.Surface, image: pygame.Surface, rect: pygame.Surface):
-    screen.blit(image, rect)
 
 
 def handle_movement(hero, switch_mode: bool):
@@ -143,23 +205,23 @@ def event(screen, hero: Hero):
                         hero.use(item)
             elif hero.context == Context.SKILLS:
                 if event.key == pygame.K_UP:
-                    skills_panel.current_attribute = max(skills_panel.current_attribute - 1, 1)
+                    game_data.skills_panel.current_attribute = max(game_data.skills_panel.current_attribute - 1, 1)
                 elif event.key == pygame.K_DOWN:
-                    skills_panel.current_attribute = min(skills_panel.current_attribute + 1, len(skills_panel.new_attributes) - 1)
+                    game_data.skills_panel.current_attribute = min(game_data.skills_panel.current_attribute + 1, len(game_data.skills_panel.new_attributes) - 1)
                 elif event.key == pygame.K_LEFT:
-                    skills_panel.decrease()
+                    game_data.skills_panel.decrease()
                 elif event.key == pygame.K_RIGHT:
-                    skills_panel.increase()
+                    game_data.skills_panel.increase()
                 elif event.key == pygame.K_RETURN:
-                    skills_panel.save()
+                    game_data.skills_panel.save()
 
             # other
             if event.key == pygame.K_c:
-                if skills_panel.show:
-                    skills_panel.close()
+                if game_data.skills_panel.show:
+                    game_data.skills_panel.close()
                     hero.change_context(Context.GAME)
                 else:
-                    skills_panel.open()
+                    game_data.skills_panel.open()
                     hero.change_context(Context.SKILLS)
             elif event.key == pygame.K_ESCAPE:
                 interface.pause(screen)
@@ -180,6 +242,10 @@ def event(screen, hero: Hero):
                 else:
                     hero.change_context(Context.INVENTORY)
                     hero.sounds.get('OpenInv').play(0)
+            elif event.key == pygame.K_F5:
+                save(hero)
+            elif event.key == pygame.K_F9:
+                save(hero)
 
 
 def show_menu():
@@ -207,154 +273,25 @@ def show_menu():
         pygame.display.update()
 
 
-def add_entity(entity: Entity, game_map: Map, game_interface: interface.Interface):
-    game_interface.elements.append(interface.HealthBar(entity))
-    game_map.add_game_object(entity)
-
-
-def add_game_object(game_object: GameObject, game_map: Map):
-    game_map.add_game_object(game_object)
-
-
-def add_interface_element(element: IDrawable):
-    game_interface.elements.append(element)
-    game_interface.elements.sort(key=lambda el: el.priority)
-
-
-game_interface = interface.Interface()
-game_map = Map()
-message_log = interface.MessageLog()
-skills_panel = None
-
-
-def get_collided_visible_objects(game_object: GameObject, area: [pygame.Rect]) -> [GameObject]:
-    collided = []
-    for go in game_map.visible_game_objects:
-        if go == game_object:
-            continue
-
-        for r in area:
-            if go.collision_rect.colliderect(r):
-                collided.append(go)
-                break
-    return collided
-
-
-def get_nearest_object(game_object: GameObject) -> [GameObject, float]:
-    pos = game_object.get_center()
-
-    min_distance = 1000000
-    nearest_object = None
-    if game_map.hero != game_object:
-        min_distance = pos.distance_to(game_map.hero.get_center())
-        nearest_object = game_map.hero
-
-    for go in game_map.visible_game_objects:
-        if go == game_object:
-            continue
-
-        go_pos = go.get_center()
-        distance = go_pos.distance_to(pos)
-        if distance < min_distance:
-            min_distance = distance
-            nearest_object = go
-    return [nearest_object, min_distance]
-
-
-def get_distance(object1: GameObject, object2: GameObject):
-    return object1.get_center().distance_to(object2.get_center())
-
-
-def check_collisions(game_object: GameObject, vector: Vector2) -> Vector2:
-    dir_vector = vector
-    offset = Vector2(game_logic.collision_offset * (1 if dir_vector.x > 0 else -1 if dir_vector.x < 0 else 0),
-                     game_logic.collision_offset * (1 if dir_vector.y > 0 else -1 if dir_vector.y < 0 else 0))
-    collision_rect = game_object.collision_rect.copy()
-    for go in game_map.visible_game_objects:
-        if go == game_object:
-            continue
-        if dir_vector == Vector2(0, 0):
-            return dir_vector
-        if go.collision_rect.colliderect(collision_rect.move(vector.x + offset.x, 0)):
-            dir_vector.x = 0
-        if go.collision_rect.colliderect(collision_rect.move(0, vector.y + offset.y)):
-            dir_vector.y = 0
-        if dir_vector == Vector2(1, 1) and go.collision_rect.colliderect(collision_rect.move(vector.x + offset.x, vector.y + offset.y)):
-            dir_vector = Vector2(0, 0)
-    return dir_vector
-
-
 def run():
     pygame.init()
     pygame.display.set_caption("Игра")
     screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
     clock = pygame.time.Clock()
 
+    game_data.init()
+
     pygame.mixer.stop()
     menu_music = pygame.mixer.Sound('res/sounds/general/background.mp3')
     menu_music.set_volume(0.2)
     menu_music.play()
 
-    hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height), game_logic.entity_collision_offset)
-    hero.update()
-    hero_width, hero_height = hero.image.get_size()
-    center = Vector2((game_logic.g_screen_width - hero_width) // 2,
-                     (game_logic.g_screen_height - hero_height) // 2)
-    hero.set_position(center)
-    add_interface_element(interface.HeroBars(hero))
-    add_interface_element(hero.inventory)
-    hero_weapon = game_logic.get_item('fists')
-    hero.set_weapon(hero_weapon)
-    game_map.hero = hero
-    add_game_object(hero, game_map)
-
-    potion = game_logic.get_item('heal_potion')
-    potion.set_position(Vector2(800, 800))
-    potion.count = 10
-    add_game_object(potion, game_map)
-
-    cudgel = game_logic.get_item('cudgel')
-    cudgel.set_position(Vector2(700, 200))
-    add_game_object(cudgel, game_map)
-
-    cudgel = game_logic.get_item('cudgel')
-    cudgel.set_position(Vector2(800, 200))
-    add_game_object(cudgel, game_map)
-
-    sword = game_logic.get_item('sword')
-    sword.set_position(Vector2(750, 200))
-    add_game_object(sword, game_map)
-
-    entity = Entity('bandit', '', Vector2(30, 70), game_logic.entity_collision_offset)
-    entity.set_position(Vector2(200, 200))
-    entity.set_weapon(game_logic.get_item('fists'))
-    entity.inventory.add_item(game_logic.get_item('cudgel'))
-    entity.inventory.add_item(game_logic.get_item('heal_potion'))
-    entity.set_weapon(game_logic.get_item('cudgel'))
-    add_entity(entity, game_map, game_interface)
-    add_interface_element(entity.inventory)
-
-    camera = Camera(game_map, hero)
-    dialog_window = interface.DialogWindow(hero)
-    global skills_panel
-    skills_panel = interface.SkillsPanel(hero)
-    add_interface_element(skills_panel)
-    add_interface_element(dialog_window)
-    add_interface_element(message_log)
-
-    hero.gain_exp(10000)
+    game_data.hero.gain_exp(10000)
 
     while True:
         clock.tick(game_logic.g_fps)
         game_logic.g_timer = (game_logic.g_timer + 1) % game_logic.g_fps
-        pygame.draw.rect(screen, (255, 255, 255), Rect(0, 0, game_logic.g_screen_width, game_logic.g_screen_height))
-
-        game_map.update()
-        camera.update()
-        game_interface.update()
-
-        event(screen, hero)
-        game_map.draw(screen)
-        game_interface.draw(screen)
-
+        game_data.update()
+        event(screen, game_data.hero)
+        game_data.draw(screen)
         pygame.display.update()

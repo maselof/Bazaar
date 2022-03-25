@@ -113,9 +113,11 @@ class Hero(Entity):
         if (self.context == Context.MENU or self.context == Context.START) and context != Context.GAME:
             return
 
+        print(self.context)
         if self.context == Context.START:
             pygame.mixer.stop()
             pygame.mixer.Sound('res/sounds/general/background.mp3').play(-1)
+            print('huy')
 
         if context == Context.GAME:
             self.inventory.close()
@@ -130,6 +132,12 @@ class Hero(Entity):
             self.inventory.show_frame = False
         elif context == Context.SKILLS:
             pass
+        elif context == Context.DEATH:
+            pygame.mixer.stop()
+            pygame.mixer.Sound('res/sounds/general/death.mp3').play(-1)
+        elif context == Context.START:
+            pygame.mixer.stop()
+            pygame.mixer.Sound('res/sounds/general/menu.mp3').play(-1)
         self.context = context
 
     def interact(self):
@@ -169,6 +177,8 @@ class Hero(Entity):
         super().update()
         self.inventory.show_frame = self.context == Context.INVENTORY
         self.check_looting_object_distance()
+        if self.stats.hp <= 0:
+            self.change_context(Context.DEATH)
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)

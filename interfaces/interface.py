@@ -346,6 +346,30 @@ class Button:
         game_logic.print_text(screen, self.text, self.position.x, self.position.y, color, font_size=self.text_size)
 
 
+class DeathMessage:
+
+    position: Vector2
+    text: str
+    text_pos: Vector2
+    size: Vector2
+
+    def __init__(self):
+        self.text = 'You died! (Press ENTER)'
+        self.size = game_logic.dm_size
+        self.position = game_logic.g_screen_center - self.size // 2
+        self.text_pos = self.position + (self.size - Vector2(2, 2) * game_logic.menu_layers_offset -
+                                         game_logic.get_text_size(self.text, game_logic.menu_buttons_text_size)) // 2
+        self.sl_pos = self.position + Vector2(1, 1) * game_logic.menu_layers_offset
+        self.sl_size = self.size - Vector2(2, 2) * game_logic.menu_layers_offset
+
+    def draw(self, screen: pygame.Surface):
+        pygame.draw.rect(screen, game_logic.menu_first_layer_color, Rect(self.position.x, self.position.y,
+                                                                         self.size.x, self.size.y))
+        pygame.draw.rect(screen, game_logic.menu_second_layer_color, Rect(self.sl_pos.x, self.sl_pos.y,
+                                                                         self.sl_size.x, self.sl_size.y))
+        game_logic.print_text(screen, self.text, self.text_pos.x, self.text_pos.y, (255, 255, 255), font_size=game_logic.menu_buttons_text_size)
+
+
 class Menu:
     buttons: [Button]
     current_button: int
@@ -377,11 +401,14 @@ class Menu:
         self.buttons[self.current_button].action()
 
     def hide(self):
+        game_cycle.game_data.init()
         self.show = False
+        game_cycle.game_data.hero.change_context(Context.START)
         game_cycle.game_data.hero.change_context(Context.GAME)
 
     def load(self):
         game_cycle.load('quicksave')
+        game_cycle.game_data.hero.change_context(Context.START)
         game_cycle.game_data.hero.change_context(Context.GAME)
 
     def draw(self, screen: pygame.Surface):

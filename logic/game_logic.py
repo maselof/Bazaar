@@ -26,6 +26,9 @@ menu_first_layer_color = (152, 94, 63)
 menu_second_layer_color = (185, 122, 87)
 menu_layers_offset = 10
 
+# death message
+dm_size = Vector2(400, 100)
+
 # hero
 g_hero_width = 30
 g_hero_height = 70

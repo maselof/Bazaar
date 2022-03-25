@@ -231,10 +231,14 @@ def event(screen, hero: Hero):
                     game_data.menu.current_button = min(game_data.menu.current_button + 1, len(game_data.menu.buttons) - 1)
                 elif event.key == pygame.K_RETURN:
                     game_data.menu.do_action()
+            elif hero.context == Context.DEATH:
+                if event.key == pygame.K_RETURN:
+                    hero.change_context(Context.START)
+                    game_data.menu.show = True
 
             # other
             if event.key == pygame.K_c:
-                if hero.context == Context.MENU or hero.context == Context.START:
+                if hero.context == Context.MENU or hero.context == Context.START or hero.context == Context.DEATH:
                     continue
                 if game_data.skills_panel.show:
                     game_data.skills_panel.close()
@@ -243,7 +247,7 @@ def event(screen, hero: Hero):
                     game_data.skills_panel.open()
                     hero.change_context(Context.SKILLS)
             elif event.key == pygame.K_ESCAPE:
-                if game_data.hero.context == Context.START:
+                if game_data.hero.context == Context.START or hero.context == Context.DEATH:
                     return
                 game_data.menu.show = not game_data.menu.show
                 if game_data.menu.show:
@@ -257,7 +261,7 @@ def event(screen, hero: Hero):
             elif event.key == pygame.K_e:
                 hero.interact()
             elif event.key == pygame.K_TAB:
-                if hero.context == Context.MENU or hero.context == Context.START:
+                if hero.context == Context.MENU or hero.context == Context.START or hero.context == Context.DEATH:
                     continue
                 if hero.inventory.is_open:
                     if (hero.looting_object != None) and hero.looting_object.inventory.is_open:
@@ -270,11 +274,11 @@ def event(screen, hero: Hero):
                     hero.change_context(Context.INVENTORY)
                     hero.sounds.get('OpenInv').play(0)
             elif event.key == pygame.K_F5:
-                if hero.context == Context.MENU or hero.context == Context.START:
+                if hero.context == Context.MENU or hero.context == Context.START or hero.context == Context.DEATH:
                     continue
                 save('quicksave')
             elif event.key == pygame.K_F9:
-                if hero.context == Context.MENU or hero.context == Context.START:
+                if hero.context == Context.MENU or hero.context == Context.START or hero.context == Context.DEATH:
                     continue
                 load('quicksave')
 
@@ -294,14 +298,15 @@ def run():
 
     game_data.hero.change_context(Context.START)
 
-    menu_music = pygame.mixer.Sound('res/sounds/general/menu.mp3')
-    menu_music.play(-1)
+    death_message = interface.DeathMessage()
 
     while True:
         event(screen, game_data.hero)
         if game_data.menu.show:
             screen.blit(menu_bg, (0, 0))
             game_data.menu.draw(screen)
+        elif game_data.hero.context == Context.DEATH:
+            death_message.draw(screen)
         else:
             clock.tick(game_logic.g_fps)
             game_data.update()

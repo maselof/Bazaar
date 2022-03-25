@@ -212,7 +212,6 @@ class Map(IDrawable):
                     self.remove_game_object(go)
 
     def move(self, vector: pygame.Vector2):
-
         for location in self.locations:
             location.move(vector)
         for map_frame in self.all_frames:

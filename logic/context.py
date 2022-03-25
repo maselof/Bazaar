@@ -9,3 +9,4 @@ class Context(Enum):
     SKILLS = 4
     TRADING = 5
     START = 6
+    DEATH = 7

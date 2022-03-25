@@ -1,4 +1,6 @@
 import sys
+
+import context
 from map import *
 import interface
 from camera import *
@@ -14,9 +16,10 @@ class GameData:
     message_log: interface.MessageLog
     skills_panel: interface.SkillsPanel
     dialog_window: interface.DialogWindow
+    menu: interface.Menu
 
     def __init__(self):
-        pass
+        self.menu = interface.Menu()
 
     def init(self):
         self.game_interface = interface.Interface()
@@ -65,20 +68,21 @@ class GameData:
 game_data = GameData()
 
 
-def save():
-    with open("savegame1.SAV", "wb") as f:
+def save(name: str):
+    with open(f"saves/{name}.SAV", "wb") as f:
         pickle.dump(game_data, f)
         game_data.message_log.add_message('Saved!')
 
 
-def load() -> GameData:
-    with open("savegame1.SAV", "rb") as f:
+def load(name: str):
+    with open(f"saves/{name}.SAV", "rb") as f:
         global game_data
         for go in game_data.game_map.all_game_objects:
             go.scale_sounds(0)
         game_data = pickle.load(f)
         game_data.hero.movement_queue = []
         game_data.hero.scale_sounds(1)
+        game_data.message_log.add_message('Loaded!')
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -220,9 +224,18 @@ def event(screen, hero: Hero):
                     game_data.skills_panel.increase()
                 elif event.key == pygame.K_RETURN:
                     game_data.skills_panel.save()
+            elif hero.context == Context.MENU or hero.context == Context.START:
+                if event.key == pygame.K_UP:
+                    game_data.menu.current_button = max(game_data.menu.current_button - 1, 0)
+                elif event.key == pygame.K_DOWN:
+                    game_data.menu.current_button = min(game_data.menu.current_button + 1, len(game_data.menu.buttons) - 1)
+                elif event.key == pygame.K_RETURN:
+                    game_data.menu.do_action()
 
             # other
             if event.key == pygame.K_c:
+                if hero.context == Context.MENU or hero.context == Context.START:
+                    continue
                 if game_data.skills_panel.show:
                     game_data.skills_panel.close()
                     hero.change_context(Context.GAME)
@@ -230,7 +243,13 @@ def event(screen, hero: Hero):
                     game_data.skills_panel.open()
                     hero.change_context(Context.SKILLS)
             elif event.key == pygame.K_ESCAPE:
-                interface.pause(screen)
+                if game_data.hero.context == Context.START:
+                    return
+                game_data.menu.show = not game_data.menu.show
+                if game_data.menu.show:
+                    game_data.hero.change_context(Context.MENU)
+                else:
+                    game_data.hero.change_context(Context.GAME)
             elif event.key == pygame.K_SPACE:
                 hero.set_action('attacking', None)
             elif event.key == pygame.K_f:
@@ -238,6 +257,8 @@ def event(screen, hero: Hero):
             elif event.key == pygame.K_e:
                 hero.interact()
             elif event.key == pygame.K_TAB:
+                if hero.context == Context.MENU or hero.context == Context.START:
+                    continue
                 if hero.inventory.is_open:
                     if (hero.looting_object != None) and hero.looting_object.inventory.is_open:
                         hero.change_context(Context.LOOTING)
@@ -249,55 +270,40 @@ def event(screen, hero: Hero):
                     hero.change_context(Context.INVENTORY)
                     hero.sounds.get('OpenInv').play(0)
             elif event.key == pygame.K_F5:
-                save()
+                if hero.context == Context.MENU or hero.context == Context.START:
+                    continue
+                save('quicksave')
             elif event.key == pygame.K_F9:
-                load()
-
-
-def show_menu():
-    pygame.init()
-    pygame.font.init()
-    pygame.display.set_caption("Игра")
-
-    menu_music = pygame.mixer.Sound('res/sounds/general/menu.mp3')
-    menu_music.set_volume(0.5)
-    menu_music.play()
-
-    screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
-    menu_bg = pygame.image.load("res/images/interface/menu/background.png")
-    show = True
-    start_button = interface.Button(540, 100, screen)
-    quit_button = interface.Button(540, 100, screen)
-    while show:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-        screen.blit(menu_bg, (0, 0))
-        start_button.draw(screen.get_size()[0] // 2 - 250, screen.get_size()[1] // 2 - 150, "Start Game", run, 70)
-        quit_button.draw(screen.get_size()[0] // 2 - 250, screen.get_size()[1] // 2, "Quit", pygame.quit, 70)
-        pygame.display.update()
+                if hero.context == Context.MENU or hero.context == Context.START:
+                    continue
+                load('quicksave')
 
 
 def run():
     pygame.init()
+    pygame.font.init()
     pygame.display.set_caption("Игра")
-    screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
+
     clock = pygame.time.Clock()
 
     game_data.init()
 
-    pygame.mixer.stop()
-    menu_music = pygame.mixer.Sound('res/sounds/general/background.mp3')
-    menu_music.set_volume(0.2)
-    menu_music.play()
+    screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
 
-    game_data.hero.gain_exp(10000)
+    menu_bg = pygame.image.load("res/images/interface/menu/background.png")
+
+    game_data.hero.change_context(Context.START)
+
+    menu_music = pygame.mixer.Sound('res/sounds/general/menu.mp3')
+    menu_music.play(-1)
 
     while True:
-        clock.tick(game_logic.g_fps)
-        game_logic.g_timer = (game_logic.g_timer + 1) % game_logic.g_fps
-        game_data.update()
         event(screen, game_data.hero)
-        game_data.draw(screen)
+        if game_data.menu.show:
+            screen.blit(menu_bg, (0, 0))
+            game_data.menu.draw(screen)
+        else:
+            clock.tick(game_logic.g_fps)
+            game_data.update()
+            game_data.draw(screen)
         pygame.display.update()

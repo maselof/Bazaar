@@ -5,7 +5,6 @@ from trader import Trader
 
 
 # general
-g_timer = 0
 g_frames_count = 2
 g_fps = 60
 
@@ -17,7 +16,15 @@ g_screen_width = 1680
 g_screen_height = 1050
 g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
-# objects sizes
+# menu
+menu_width = 400
+menu_buttons_offset = 20
+menu_buttons_text_size = 30
+menu_active_button_color = (255, 255, 255)
+menu_inactive_button_color = (232, 180, 0)
+menu_first_layer_color = (152, 94, 63)
+menu_second_layer_color = (185, 122, 87)
+menu_layers_offset = 10
 
 # hero
 g_hero_width = 30
@@ -154,6 +161,7 @@ def get_effect(id: str) -> Effect:
     effect = EFFECTS.get(id)
     return Effect(effect.name, effect.action_func, effect.duration, effect.delay, effect.value, effect.looped)
 
+pygame.init()
 
 # id: GameObject
 ITEMS = {'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0)}
@@ -296,4 +304,3 @@ def print_text(screen, message, x, y, font_color=(0, 0, 0), font_type="res/fonts
     font_type = pygame.font.Font(font_type, font_size)
     text = font_type.render(message, True, font_color)
     screen.blit(text, (x, y))
-

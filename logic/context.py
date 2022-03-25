@@ -8,3 +8,4 @@ class Context(Enum):
     MENU = 3
     SKILLS = 4
     TRADING = 5
+    START = 6

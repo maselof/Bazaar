@@ -1,3 +1,5 @@
+import pygame.mixer
+
 from hero import *
 from chest import Chest
 from trader import Trader
@@ -326,47 +328,68 @@ class HeroBars(IDrawable):
 
 
 class Button:
-    def __init__(self, w, h, screen):
-        """инициализация кнопки"""
-        self.w = w
-        self.h = h
-        self.inactive_color = (120, 120, 120)
-        self.active_color = (60, 60, 60)
-        self.screen = screen
 
-    def draw(self, x, y, message, action=None, font_size=30):
-        mouse = pygame.mouse.get_pos()
-        click = pygame.mouse.get_pressed()
+    size: Vector2
+    position: Vector2
+    text: str
+    text_size: int
 
-        if x < mouse[0] < x + self.w and y < mouse[1] < y + self.h:
-            pygame.draw.rect(self.screen, self.active_color, (x, y, self.w, self.h))
-            if click[0]:
-                action()
-        else:
-            pygame.draw.rect(self.screen, self.inactive_color, (x, y, self.w, self.h))
-        game_logic.print_text(self.screen, message=message, x=x + 10, y=y + 10, font_size=font_size)
+    def __init__(self, text: str, text_size: int, action):
+        self.position = Vector2(0, 0)
+        self.text = text
+        self.text_size = text_size
+        self.action = action
+        self.size = game_logic.get_text_size(text, text_size)
+
+    def draw(self, screen: pygame.Surface, is_active: bool):
+        color = game_logic.menu_active_button_color if is_active else game_logic.menu_inactive_button_color
+        game_logic.print_text(screen, self.text, self.position.x, self.position.y, color, font_size=self.text_size)
 
 
-def pause(screen):
-    paused = True
-    quit_button = Button(540, 100, screen)
-    while paused:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-        game_logic.print_text(screen, "Press ENTER to continue", screen.get_size()[0] // 2 - 150, screen.get_size()[1] // 2 - 100)
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_RETURN]:
-            paused = False
-        quit_button.draw(screen.get_size()[0] // 2 - 250, screen.get_size()[1] // 2, "Quit", pygame.quit, 70)
-        pygame.display.update()
+class Menu:
+    buttons: [Button]
+    current_button: int
+    size: Vector2
+    position: Vector2
+    show: bool
 
+    def __init__(self):
+        buttons = [Button('New Game', game_logic.menu_buttons_text_size, self.hide),
+                   Button('Load Game', game_logic.menu_buttons_text_size, self.load),
+                   Button('Quit Game', game_logic.menu_buttons_text_size, pygame.quit)]
+        self.show = True
+        self.buttons = buttons
+        self.current_button = 0
+        c_b = len(self.buttons)
+        b_h = self.buttons[0].size.y
+        b_o = b_h + game_logic.menu_buttons_offset
+        self.size = Vector2(game_logic.menu_width, c_b * b_o + game_logic.menu_buttons_offset + 2 * game_logic.menu_layers_offset)
+        self.position = game_logic.g_screen_center - self.size // 2
 
-pygame.init()
+        self.sl_size = self.size - Vector2(2, 2) * game_logic.menu_layers_offset
+        self.sl_pos = self.position + Vector2(1, 1) * game_logic.menu_layers_offset
 
+        for i in range(c_b):
+            self.buttons[i].position = self.sl_pos + Vector2((self.sl_size.x - self.buttons[i].size.x) // 2,
+                                                             game_logic.menu_buttons_offset + i * b_o)
 
+    def do_action(self):
+        self.buttons[self.current_button].action()
 
+    def hide(self):
+        self.show = False
+        game_cycle.game_data.hero.change_context(Context.GAME)
 
+    def load(self):
+        game_cycle.load('quicksave')
+        game_cycle.game_data.hero.change_context(Context.GAME)
 
+    def draw(self, screen: pygame.Surface):
+        pygame.draw.rect(screen, game_logic.menu_first_layer_color, Rect(self.position.x, self.position.y,
+                                                                         self.size.x, self.size.y))
 
+        pygame.draw.rect(screen, game_logic.menu_second_layer_color, Rect(self.sl_pos.x, self.sl_pos.y,
+                                                                          self.sl_size.x, self.sl_size.y))
+
+        for i in range(len(self.buttons)):
+            self.buttons[i].draw(screen, i == self.current_button)

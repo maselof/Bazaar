@@ -110,6 +110,13 @@ class Hero(Entity):
         self.inventory.remove_item(item)
 
     def change_context(self, context: Context):
+        if (self.context == Context.MENU or self.context == Context.START) and context != Context.GAME:
+            return
+
+        if self.context == Context.START:
+            pygame.mixer.stop()
+            pygame.mixer.Sound('res/sounds/general/background.mp3').play(-1)
+
         if context == Context.GAME:
             self.inventory.close()
             if self.looting_object:

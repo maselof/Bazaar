@@ -13,8 +13,8 @@ exp_gain = 100
 
 
 # screen
-g_screen_width = 1920
-g_screen_height = 1080
+g_screen_width = 1680
+g_screen_height = 1050
 g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
 # objects sizes

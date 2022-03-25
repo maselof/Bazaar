@@ -48,4 +48,5 @@ class ImageWrapper:
 
     def __setstate__(self, state):
         self.path, self.size, self.rect = state
-        self.image = image.load(self.path)
+        self.image = image.load(self.path) if self.path else Surface([self.size.x, self.size.y], pygame.SRCALPHA)
+        self.size = self.size if self.size else Vector2(self.image.get_size())

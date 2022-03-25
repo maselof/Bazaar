@@ -100,7 +100,7 @@ class GameContainer(IDrawable):
 
     def __init__(self):
         self.container = []
-        self.inv_cell_img = pygame.image.load('res/images/interface/inventory/inv_cell.png')
+        self.inv_cell_img = ImageWrapper('res/images/interface/inventory/inv_cell.png')
         self.frame_img = ImageWrapper('res/images/interface/inventory/frame.png')
         self.is_open = False
         self.show_frame = False
@@ -184,7 +184,7 @@ class GameContainer(IDrawable):
             pos = self.bg_pos + Vector2(img_width * (i % game_logic.inventory_columns_count) + game_logic.inventory_left_cell_offset,
                                   img_height * (i // game_logic.inventory_columns_count) + game_logic.inventory_left_cell_offset)
             self.inv_cell_rect.x, self.inv_cell_rect.y = pos.x, pos.y
-            screen.blit(self.inv_cell_img, self.inv_cell_rect)
+            screen.blit(self.inv_cell_img.image, self.inv_cell_rect)
             if i < len(self.container):
                 el_pos = pos + Vector2(1, 1) * game_logic.inventory_left_cell_offset
                 self.container[i].icon.set_position(el_pos)
@@ -221,7 +221,7 @@ class HeroInventory(GameContainer):
     def __init__(self):
         super().__init__()
         self.inventory_panel = [None for i in range(game_logic.panel_items_count)]
-        self.ip_image = pygame.image.load('res/images/interface/inventory/items_panel.png')
+        self.ip_image = ImageWrapper('res/images/interface/inventory/items_panel.png')
         ip_w, ip_h = self.ip_image.get_size()
         self.ip_rect = pygame.Rect((game_logic.g_screen_width - ip_w) // 2,
                                    game_logic.g_screen_height - ip_h - game_logic.panel_bottom_offset, 0, 0)
@@ -256,7 +256,7 @@ class HeroInventory(GameContainer):
         self.update_panel()
 
     def draw_inventory_panel(self, screen):
-        screen.blit(self.ip_image, self.ip_rect)
+        screen.blit(self.ip_image.image, self.ip_rect)
         ip_pos = Vector2(self.ip_rect.x, self.ip_rect.y)
         first_el_pos = ip_pos + Vector2(game_logic.panel_items_offset, game_logic.panel_items_offset)
         for i in range(len(self.inventory_panel)):

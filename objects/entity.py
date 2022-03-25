@@ -142,6 +142,7 @@ class Entity(GameObject, ILootable):
 
         self.stats = self.get_updated_stats(self.stats)
         self.refresh()
+        self.scale_sounds(0)
 
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
@@ -157,6 +158,10 @@ class Entity(GameObject, ILootable):
         super().scale_sounds(scaling)
         if self.weapon:
             self.weapon.scale_sounds(scaling)
+
+    def stop_sounds(self):
+        for sound in self.sounds.values():
+            sound.stop()
 
     def set_position(self, point: pygame.Vector2):
         super().set_position(point)

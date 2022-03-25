@@ -202,6 +202,7 @@ class Map(IDrawable):
                 bag.set_position(go.get_center())
                 game_cycle.game_data.game_interface.add_element(bag.inventory)
                 self.add_game_object(bag)
+                go.stop_sounds()
                 self.remove_game_object(go)
                 self.hero.gain_exp(go.stats.max_exp)
                 game_cycle.game_data.message_log.add_message(f'Gain {go.stats.max_exp} xp')

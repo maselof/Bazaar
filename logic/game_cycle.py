@@ -65,14 +65,20 @@ class GameData:
 game_data = GameData()
 
 
-def save(hero):
-    with open("savegame.SAV", "wb") as f:
-        pickle.dump(hero, f)
+def save():
+    with open("savegame1.SAV", "wb") as f:
+        pickle.dump(game_data, f)
+        game_data.message_log.add_message('Saved!')
 
 
-def load() -> Hero:
-    with open("savegame.SAV", "rb") as f:
-        return pickle.load(f)
+def load() -> GameData:
+    with open("savegame1.SAV", "rb") as f:
+        global game_data
+        for go in game_data.game_map.all_game_objects:
+            go.scale_sounds(0)
+        game_data = pickle.load(f)
+        game_data.hero.movement_queue = []
+        game_data.hero.scale_sounds(1)
 
 
 def remove_all_directions(queue: [Direction], direction: Direction):
@@ -243,9 +249,9 @@ def event(screen, hero: Hero):
                     hero.change_context(Context.INVENTORY)
                     hero.sounds.get('OpenInv').play(0)
             elif event.key == pygame.K_F5:
-                save(hero)
+                save()
             elif event.key == pygame.K_F9:
-                save(hero)
+                load()
 
 
 def show_menu():

@@ -10,7 +10,7 @@ class Animation:
     speed: float
     frame: float
     finished: bool
-    interruptible: bool
+    interruptable: bool
     directional: bool
 
     def __init__(self,
@@ -22,7 +22,7 @@ class Animation:
                  scale: float = 1):
         self.path = path + name
         self.name = name
-        self.interruptible = interruptible
+        self.interruptable = interruptible
         self.directional = directional
         self.speed = speed
         self.scale = scale
@@ -63,8 +63,8 @@ class Animation:
         self.frame += self.speed
 
     def __getstate__(self):
-        return self.path, self.name, self.speed, self.frame, self.finished, self.interruptible, self.directional
+        return self.path, self.name, self.speed, self.frame, self.finished, self.interruptable, self.directional
 
     def __setstate__(self, state):
-        self.path, self.name, self.speed, self.frame, self.finished, self.interruptible, self.directional = state
+        self.path, self.name, self.speed, self.frame, self.finished, self.interruptable, self.directional = state
         self.__prepare_images()

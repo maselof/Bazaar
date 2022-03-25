@@ -154,10 +154,25 @@ def breathing(entity: object, value: float):
     entity.stats.stamina = min(entity.stats.stamina + int(value), entity.stats.max_stamina)
 
 
-EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 10, False),
+def mana_recovery(entity: object, value: float):
+    entity.stats.mana = min(entity.stats.mana + int(value), entity.stats.max_mana)
+
+
+def refreshing(entity: object, value: float):
+    entity.stats.hp = entity.stats.max_hp
+    entity.stats.stamina = entity.stats.max_stamina
+    entity.stats.mana = entity.stats.max_mana
+
+
+EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 50, False),
            'Bleeding': Effect('Bleeding', bleeding, 300, 60, 10, False),
            'Fatigue': Effect('Fatigue', fatigue, 30, 30, 5, True),
-           'Breathing': Effect('Breathing', breathing, 60, 60, 5, True)}
+           'Breathing': Effect('Breathing', breathing, 60, 60, 5, True),
+           'Weak Mana Recovery': Effect('Mana Recovery', mana_recovery, 1, 1, 50, False),
+           'Mean Mana Recovery': Effect('Mana Recovery', mana_recovery, 1, 1, 100, False),
+           'Weak Stamina Recovery': Effect('Stamina Recovery', breathing, 1, 1, 50, False),
+           'Mean Stamina Recovery': Effect('Stamina Recovery', breathing, 1, 1, 100, False),
+           'Refresh': Effect('All stats recovery', refreshing, 1, 1, 10000, False)}
 
 
 def get_effect(id: str) -> Effect:
@@ -172,9 +187,32 @@ ITEMS = {'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0)}
 
 def init_items():
     ITEMS.update({'coin': Item('coin', 'general/', Vector2(0, 0), False, 1, [], 1, 'Gold coin.', 0),
-                  'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20, 'Weak healing potion. Increase your hp on 10 points.', 50),
+
+                  'heal_potion': Item('heal_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Healing')], 20,
+                                      'Weak healing potion. Increase your hp on 50 points.', 50),
+
+                  'endurance_potion': Item('endurance_potion', 'potions/', Vector2(0, 0), False, 1,
+                                           [get_effect('Weak Stamina Recovery')], 20,
+                                           'Weak stamina potion. Increase your sp on 50 points.', 50),
+
+                  'endurance_potion_2': Item('endurance_potion_2', 'potions/', Vector2(0, 0), False, 1,
+                                           [get_effect('Mean Stamina Recovery')], 40,
+                                           'Mean stamina potion. Increase your sp on 100 points.', 50),
+
+                  'mana_potion': Item('mana_potion', 'potions/', Vector2(0, 0), False, 1,
+                                           [get_effect('Weak Mana Recovery')], 20,
+                                           'Weak mana potion. Increase your mp on 50 points.', 50),
+
+                  'mana_potion_2': Item('mana_potion_2', 'potions/', Vector2(0, 0), False, 1,
+                                             [get_effect('Mean Mana Recovery')], 40,
+                                             'Mean mana potion. Increase your mp on 100 points.', 50),
+
+                  'golden_potion': Item('golden_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Refresh')], 500,
+                                      'Golden potion. Recovery all stats.', 10),
+
                   'cudgel': Weapon('cudgel', 40, 0.7, 80, [], [], 100, 'The most common weapon among bandits.', 10),
-                  'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.', 10)})
+                  'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.', 10),
+                  'axe': Weapon('axe', 30, 0.8, 60, [], [], 150, 'Axe.', 10)})
 
 
 def get_item(id: str):

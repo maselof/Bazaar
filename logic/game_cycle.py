@@ -33,8 +33,10 @@ class GameData:
         game_logic.init_entities()
         game_logic.init_locations()
 
-        hero_weapon = game_logic.get_item('fists')
+        hero_weapon = game_logic.get_item('axe')
         self.hero.set_weapon(hero_weapon)
+        self.hero.gain_exp(100000)
+        self.hero.inventory.add_item(game_logic.get_item('golden_potion'), 100)
 
         self.game_map = Map(self.hero)
         self.camera = Camera(self.game_map, self.hero)
@@ -257,7 +259,7 @@ def event(screen, hero: Hero):
             elif event.key == pygame.K_SPACE:
                 hero.set_action('attacking', None)
             elif event.key == pygame.K_f:
-                hero.stats.hp -= 10
+                print(hero.context)
             elif event.key == pygame.K_e:
                 hero.interact()
             elif event.key == pygame.K_TAB:

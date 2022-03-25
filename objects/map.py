@@ -8,6 +8,7 @@ from entity import Entity
 import random
 from location import Location
 from chest import Chest
+from context import Context
 
 
 def to_frame_coordinates(point: Vector2) -> Vector2:
@@ -208,6 +209,10 @@ class Map(IDrawable):
                 game_cycle.game_data.message_log.add_message(f'Gain {go.stats.max_exp} xp')
             if isinstance(go, Chest):
                 if go.name == 'bag' and len(go.inventory.container) == 0:
+                    if self.hero.inventory.is_open:
+                        self.hero.change_context(Context.INVENTORY)
+                    else:
+                        self.hero.change_context(Context.GAME)
                     go.inventory.close()
                     self.remove_game_object(go)
 

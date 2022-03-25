@@ -45,12 +45,13 @@ class DialogWindow(IDrawable):
             self.show = False
             return
         self.show = True
+        print(go)
         if isinstance(go, Item):
             self.message = 'Take (E)'
-        elif isinstance(go, Chest):
-            self.message = 'Loot (E)'
         elif isinstance(go, Trader):
             self.message = 'Trade (E)'
+        elif isinstance(go, Chest):
+            self.message = 'Loot (E)'
         else:
             self.show = False
 

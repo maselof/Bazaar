@@ -33,10 +33,9 @@ class GameData:
         game_logic.init_entities()
         game_logic.init_locations()
 
-        hero_weapon = game_logic.get_item('axe')
+        hero_weapon = game_logic.get_item('fists')
         self.hero.set_weapon(hero_weapon)
-        self.hero.gain_exp(100000)
-        self.hero.inventory.add_item(game_logic.get_item('golden_potion'), 100)
+        self.hero.inventory.add_item(game_logic.get_item('heal_potion'), 10)
 
         self.game_map = Map(self.hero)
         self.camera = Camera(self.game_map, self.hero)

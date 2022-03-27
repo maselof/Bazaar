@@ -113,11 +113,9 @@ class Hero(Entity):
         if (self.context == Context.MENU or self.context == Context.START) and context != Context.GAME:
             return
 
-        print(self.context)
         if self.context == Context.START:
             pygame.mixer.stop()
             pygame.mixer.Sound('res/sounds/general/background.mp3').play(-1)
-            print('huy')
 
         if context == Context.GAME:
             self.inventory.close()
@@ -172,6 +170,8 @@ class Hero(Entity):
             self.stats.skill_points += 1
             self.stats.exp -= self.stats.max_exp
             self.stats.max_exp += game_logic.exp_gain
+            self.refresh()
+            game_cycle.game_data.message_log.add_message('LVL UP!')
 
     def update(self):
         super().update()

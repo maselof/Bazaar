@@ -16,7 +16,7 @@ class ImageWrapper:
                  path: str = None,
                  size: Vector2 = None):
         self.path = path
-        self.image = image.load(path) if path else Surface([size.x, size.y], pygame.SRCALPHA)
+        self.image = image.load(path).convert_alpha() if path else Surface([size.x, size.y], pygame.SRCALPHA)
         self.size = size if size else Vector2(self.image.get_size())
         self.rect = Rect(0, 0, self.size.x, self.size.y)
 
@@ -48,5 +48,5 @@ class ImageWrapper:
 
     def __setstate__(self, state):
         self.path, self.size, self.rect = state
-        self.image = image.load(self.path) if self.path else Surface([self.size.x, self.size.y], pygame.SRCALPHA)
+        self.image = image.load(self.path).convert_alpha() if self.path else Surface([self.size.x, self.size.y], pygame.SRCALPHA)
         self.size = self.size if self.size else Vector2(self.image.get_size())

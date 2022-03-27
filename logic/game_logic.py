@@ -1,3 +1,5 @@
+import pygame.display
+
 from location import Location
 from entity import *
 from chest import Chest
@@ -12,8 +14,8 @@ exp_gain = 100
 
 
 # screen
-g_screen_width = 1680
-g_screen_height = 1050
+g_screen_width = 1920
+g_screen_height = 1080
 g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
 
 # menu
@@ -137,6 +139,9 @@ NUMBER_KEYS = {pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3, pygam
 
 # effect funcs:
 
+pygame.init()
+pygame.display.set_mode([g_screen_width, g_screen_height])
+
 
 def healing(entity: object, value: float):
     entity.stats.hp = min(entity.stats.hp + int(value), entity.stats.max_hp)
@@ -178,8 +183,6 @@ EFFECTS = {'Healing': Effect('Healing', healing, 1, 1, 50, False),
 def get_effect(id: str) -> Effect:
     effect = EFFECTS.get(id)
     return Effect(effect.name, effect.action_func, effect.duration, effect.delay, effect.value, effect.looped)
-
-pygame.init()
 
 # id: GameObject
 ITEMS = {'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0)}

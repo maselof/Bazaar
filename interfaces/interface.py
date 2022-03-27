@@ -45,7 +45,6 @@ class DialogWindow(IDrawable):
             self.show = False
             return
         self.show = True
-        print(go)
         if isinstance(go, Item):
             self.message = 'Take (E)'
         elif isinstance(go, Trader):
@@ -117,8 +116,6 @@ class HealthBar(IDrawable):
         self.__offset = 20
         self.__frame = ImageWrapper('res/images/interface/health_bar/frame.png')
         self.__band = ImageWrapper('res/images/interface/health_bar/band.png')
-        self.__frame.scale(0.7, 0.5)
-        self.__band.scale(0.7, 0.5)
         self.__initial_band_size = int(self.__band.get_size().x)
         self.priority = game_logic.hp_bar_priority
 

@@ -37,7 +37,7 @@ class Location(IDrawable):
             weapons = game_logic.get_weapons()
             entity.set_weapon(weapons[random.randint(0, len(weapons) - 1)])
             entity.stats.lvl = random.randint(0, 10)
-            entity.stats.max_exp = entity.stats.exp * entity.stats.lvl
+            entity.stats.max_exp = entity.stats.exp * (entity.stats.lvl + 1)
             for i in range(entity.stats.lvl):
                 stats[random.randint(0, len(stats) - 1)] += 1
             entity.stats.strength += stats[0]

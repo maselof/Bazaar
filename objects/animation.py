@@ -46,7 +46,7 @@ class Animation:
         for _, __, img_files in os.walk(dir_path):
             for img in img_files:
                 full_path = dir_path + img
-                images.append(pygame.image.load(full_path))
+                images.append(pygame.image.load(full_path).convert_alpha())
         return images
 
     def start(self):

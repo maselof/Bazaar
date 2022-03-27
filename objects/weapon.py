@@ -1,4 +1,5 @@
 from pygame import Vector2
+
 from action import Action
 from animation import Animation
 from item import Item
@@ -55,4 +56,3 @@ class Weapon(Item):
         self.not_equipped_icon = ImageWrapper('res/images/icons/weapons/' + self.name + '/1.png')
         self.equipped_icon = ImageWrapper('res/images/icons/weapons/' + self.name + '/2.png')
         self.icon = self.not_equipped_icon
-

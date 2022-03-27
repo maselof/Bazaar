@@ -1,5 +1,11 @@
-from game_object import *
-from inventory import ILootable, GameContainer
+from pygame import Vector2
+
+from game_object import GameObject
+from inventory import ILootable
+from inventory import GameContainer
+from action import Action
+from animation import Animation
+from sound_wrapper import SoundWrapper
 
 
 class Chest(GameObject, ILootable):

@@ -1,8 +1,16 @@
-from entity import *
+import pygame
+from pygame import Vector2
+
+import game_logic
+import game_cycle
+from entity import Entity
 from inventory import HeroInventory
 from inventory import ILootable
 from context import Context
 from chest import Chest
+from item import Item
+from weapon import Weapon
+from sound_wrapper import SoundWrapper
 
 
 class Hero(Entity):
@@ -18,7 +26,7 @@ class Hero(Entity):
                  scaling: float = 1):
         super().__init__('hero', '', size, collision_rect_offset, scaling)
         self.movement_queue = []
-        self.interact_radius = game_logic.hero_take_radius
+        self.interact_radius = game_logic.HERO_INTERACT_RADIUS
         self.context = Context.GAME
         self.inventory = HeroInventory()
         self.looting_object = None
@@ -45,11 +53,12 @@ class Hero(Entity):
     def action_walking(self, args: [object]):
         self.direction_vector = game_cycle.game_data.game_map.check_collisions(self, args[0][0])
         if len(self.effects):
-            self.stats.movement_speed = int(self.stats.dexterity / 10 * game_logic.hero_base_speed)
+            self.stats.movement_speed = int(self.stats.dexterity / 10 * game_logic.HERO_BASE_SPEED)
             if args[0][1] and self.stats.stamina > 0:
                 self.stats.movement_speed = int(self.stats.movement_speed * 1.5)
 
-            self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
+            self.actions.get('walking').animation.speed = (game_logic.ENTITY_WALKING_ANIM_SPEED *
+                                                           self.stats.movement_speed / game_logic.HERO_BASE_SPEED)
             self.effects.get('Fatigue').enabled = args[0][1]
             self.effects.get('Breathing').enabled = False
         if self.sounds:
@@ -141,10 +150,8 @@ class Hero(Entity):
     def interact(self):
         object, distance = game_cycle.game_data.game_map.get_nearest_object(self)
         if distance > self.interact_radius:
-            object = None
-            # return
+            return
 
-        # print(object)
         if isinstance(object, Item):
             self.inventory.add_item(object, object.count)
             game_cycle.game_data.game_map.remove_game_object(object)
@@ -169,7 +176,7 @@ class Hero(Entity):
             self.stats.lvl += 1
             self.stats.skill_points += 1
             self.stats.exp -= self.stats.max_exp
-            self.stats.max_exp += game_logic.exp_gain
+            self.stats.max_exp += game_logic.LVL_EXP_STEP
             self.refresh()
             game_cycle.game_data.message_log.add_message('LVL UP!')
 
@@ -182,6 +189,3 @@ class Hero(Entity):
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
-        # pygame.draw.circle(screen, (0, 255, 0), self.get_center(), game_logic.hero_sounds_range)
-
-

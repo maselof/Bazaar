@@ -1,6 +1,9 @@
+from pygame import Vector2
+
 import game_logic
-from chest import *
 import game_cycle
+from chest import Chest
+from sound_wrapper import SoundWrapper
 
 
 class Trader(Chest):

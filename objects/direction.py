@@ -1,5 +1,6 @@
 import random
 from enum import Enum
+
 from pygame import Vector2
 
 

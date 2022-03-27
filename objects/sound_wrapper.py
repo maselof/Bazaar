@@ -14,7 +14,7 @@ class SoundWrapper:
                  volume: float = 1):
         self.path = path
         self.volume = volume
-        if path == None:
+        if path is None:
             self.sound = None
         else:
             self.sound = Sound(path)
@@ -44,7 +44,7 @@ class SoundWrapper:
 
     def __setstate__(self, state):
         self.path, self.interruptable, self.volume, self.is_playing = state
-        if self.path == None:
+        if self.path is None:
             self.sound = None
         else:
             self.sound = Sound(self.path)

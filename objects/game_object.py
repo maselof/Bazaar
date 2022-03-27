@@ -1,8 +1,12 @@
-from action import *
-from animation import *
-from idrawable import *
+import pygame
+from pygame import Vector2
+
+from action import Action
+from animation import Animation
+from idrawable import IDrawable
 from sound_wrapper import SoundWrapper
 from image_wrapper import ImageWrapper
+from direction import Direction
 
 
 class GameObject(IDrawable):
@@ -88,19 +92,13 @@ class GameObject(IDrawable):
     def update(self):
         if self.current_action.animation.finished:
             self.current_action.animation.start()
-        self.current_action.animation.update(self.direction)
+        self.current_action.animation.update()
 
         self.image.image = self.current_action.animation.get_current_frame(self.direction)
-        self.image.image = pygame.transform.scale(self.image.image, self.scale_image(self.image.get_size(), self.scaling))
+        self.image.image = pygame.transform.scale(self.image.image, self.scale_image(self.image.get_size(),
+                                                                                     self.scaling))
 
         self.current_action.do()
 
     def draw(self, screen: pygame.Surface):
         self.image.draw(screen)
-        # pygame.draw.rect(screen, (0, 255, 0), self.collision_rect)
-
-
-
-
-
-

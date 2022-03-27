@@ -1,11 +1,19 @@
 import sys
-
-import context
-from map import *
-import interface
-from camera import *
-from trader import Trader
 import pickle
+
+import pygame
+from pygame import Vector2
+
+import game_logic
+import interface
+from context import Context
+from map import Map
+from hero import Hero
+from camera import Camera
+from trader import Trader
+from direction import Direction
+from direction import is_horizontal
+from weapon import Weapon
 
 
 class GameData:
@@ -48,11 +56,11 @@ class GameData:
         self.game_map.add_game_object(self.hero)
 
     def create_hero(self):
-        hero = Hero(Vector2(game_logic.g_hero_width, game_logic.g_hero_height), game_logic.entity_collision_offset)
+        hero = Hero(Vector2(game_logic.HERO_WIDTH, game_logic.HERO_HEIGHT), game_logic.ENTITY_COLLISION_OFFSET)
         hero.update()
         hero_width, hero_height = hero.image.get_size()
-        center = Vector2((game_logic.g_screen_width - hero_width) // 2,
-                         (game_logic.g_screen_height - hero_height) // 2)
+        center = Vector2((game_logic.SCREEN_WIDTH - hero_width) // 2,
+                         (game_logic.SCREEN_HEIGHT - hero_height) // 2)
         hero.set_position(center)
         self.hero = hero
 
@@ -109,20 +117,20 @@ def handle_movement(hero, switch_mode: bool):
     hero.direction = priority_direction
     direction_vector += priority_direction.value
 
-    for dir in reversed_queue:
+    for direction in reversed_queue:
         if is_horizontal(priority_direction):
-            if not is_horizontal(dir):
-                direction_vector += dir.value
+            if not is_horizontal(direction):
+                direction_vector += direction.value
                 break
         else:
-            if is_horizontal(dir):
-                direction_vector += dir.value
+            if is_horizontal(direction):
+                direction_vector += direction.value
                 break
 
     hero.set_action('walking', [direction_vector, switch_mode])
 
 
-def event(screen, hero: Hero):
+def event(hero: Hero):
     switch_mode = pygame.key.get_pressed()[pygame.K_LSHIFT]
 
     handle_movement(hero, switch_mode)
@@ -156,14 +164,14 @@ def event(screen, hero: Hero):
             # inventory
             if hero.context == Context.INVENTORY:
                 if event.key == pygame.K_UP:
-                    hero.inventory.change_focus_item(-1 * game_logic.inventory_columns_count)
+                    hero.inventory.change_focus_item(-1 * game_logic.INVENTORY_COLUMNS_COUNT)
                 elif event.key == pygame.K_DOWN:
-                    hero.inventory.change_focus_item(game_logic.inventory_columns_count)
+                    hero.inventory.change_focus_item(game_logic.INVENTORY_COLUMNS_COUNT)
                 elif event.key == pygame.K_LEFT:
                     hero.inventory.change_focus_item(-1)
                 elif event.key == pygame.K_RIGHT:
-                    if (hero.looting_object != None) & (
-                            ((hero.inventory.focus_item_index + 1) % game_logic.inventory_columns_count == 0) |
+                    if (hero.looting_object is not None) & (
+                            ((hero.inventory.focus_item_index + 1) % game_logic.INVENTORY_COLUMNS_COUNT == 0) |
                             (hero.inventory.focus_item_index + 1 >= len(hero.inventory.container))):
                         hero.change_context(Context.LOOTING)
                     else:
@@ -184,15 +192,17 @@ def event(screen, hero: Hero):
                         else:
                             hero.use(focus_item)
                 elif game_logic.NUMBER_KEYS.get(event.key) is not None:
-                    hero.inventory.set_panel_index(hero.inventory.get_focus_item(), game_logic.NUMBER_KEYS.get(event.key) + 1)
+                    hero.inventory.set_panel_index(hero.inventory.get_focus_item(),
+                                                   game_logic.NUMBER_KEYS.get(event.key) + 1)
 
             elif hero.context == Context.LOOTING:
                 if event.key == pygame.K_UP:
-                    hero.looting_object.inventory.change_focus_item(-1 * game_logic.inventory_columns_count)
+                    hero.looting_object.inventory.change_focus_item(-1 * game_logic.INVENTORY_COLUMNS_COUNT)
                 elif event.key == pygame.K_DOWN:
-                    hero.looting_object.inventory.change_focus_item(game_logic.inventory_columns_count)
+                    hero.looting_object.inventory.change_focus_item(game_logic.INVENTORY_COLUMNS_COUNT)
                 elif event.key == pygame.K_LEFT:
-                    if (hero.inventory.is_open) & ((hero.looting_object.inventory.focus_item_index % game_logic.inventory_columns_count == 0)):
+                    if hero.inventory.is_open and (
+                            hero.looting_object.inventory.focus_item_index % game_logic.INVENTORY_COLUMNS_COUNT == 0):
                         hero.change_context(Context.INVENTORY)
                     else:
                         hero.looting_object.inventory.change_focus_item(-1)
@@ -218,7 +228,8 @@ def event(screen, hero: Hero):
                 if event.key == pygame.K_UP:
                     game_data.skills_panel.current_attribute = max(game_data.skills_panel.current_attribute - 1, 1)
                 elif event.key == pygame.K_DOWN:
-                    game_data.skills_panel.current_attribute = min(game_data.skills_panel.current_attribute + 1, len(game_data.skills_panel.new_attributes) - 1)
+                    game_data.skills_panel.current_attribute = min(game_data.skills_panel.current_attribute + 1,
+                                                                   len(game_data.skills_panel.new_attributes) - 1)
                 elif event.key == pygame.K_LEFT:
                     game_data.skills_panel.decrease()
                 elif event.key == pygame.K_RIGHT:
@@ -229,7 +240,8 @@ def event(screen, hero: Hero):
                 if event.key == pygame.K_UP:
                     game_data.menu.current_button = max(game_data.menu.current_button - 1, 0)
                 elif event.key == pygame.K_DOWN:
-                    game_data.menu.current_button = min(game_data.menu.current_button + 1, len(game_data.menu.buttons) - 1)
+                    game_data.menu.current_button = min(game_data.menu.current_button + 1,
+                                                        len(game_data.menu.buttons) - 1)
                 elif event.key == pygame.K_RETURN:
                     game_data.menu.do_action()
             elif hero.context == Context.DEATH:
@@ -265,7 +277,7 @@ def event(screen, hero: Hero):
                 if hero.context == Context.MENU or hero.context == Context.START or hero.context == Context.DEATH:
                     continue
                 if hero.inventory.is_open:
-                    if (hero.looting_object != None) and hero.looting_object.inventory.is_open:
+                    if (hero.looting_object is not None) and hero.looting_object.inventory.is_open:
                         hero.change_context(Context.LOOTING)
                         hero.inventory.close()
                     else:
@@ -287,13 +299,13 @@ def event(screen, hero: Hero):
 def run():
     pygame.init()
     pygame.font.init()
-    pygame.display.set_caption("Игра")
+    pygame.display.set_caption("Game")
 
     clock = pygame.time.Clock()
 
     game_data.init()
 
-    screen = pygame.display.set_mode((game_logic.g_screen_width, game_logic.g_screen_height))
+    screen = pygame.display.set_mode((game_logic.SCREEN_WIDTH, game_logic.SCREEN_HEIGHT))
 
     menu_bg = pygame.image.load("res/images/interface/menu/background.png")
 
@@ -302,14 +314,14 @@ def run():
     death_message = interface.DeathMessage()
 
     while True:
-        event(screen, game_data.hero)
+        event(game_data.hero)
         if game_data.menu.show:
             screen.blit(menu_bg, (0, 0))
             game_data.menu.draw(screen)
         elif game_data.hero.context == Context.DEATH:
             death_message.draw(screen)
         else:
-            clock.tick(game_logic.g_fps)
+            clock.tick(game_logic.FPS)
             game_data.update()
             game_data.draw(screen)
         pygame.display.update()

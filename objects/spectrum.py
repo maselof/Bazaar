@@ -1,4 +1,5 @@
 import pygame
+
 from idrawable import IDrawable
 from image_wrapper import ImageWrapper
 

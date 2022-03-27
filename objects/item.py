@@ -1,6 +1,8 @@
-from game_object import *
-from effect import *
-from image_wrapper import *
+from pygame import Vector2
+
+from game_object import GameObject
+from effect import Effect
+from image_wrapper import ImageWrapper
 
 
 class Item(GameObject):
@@ -32,11 +34,7 @@ class Item(GameObject):
         self.trading_count = trading_count
 
     def sounds_init(self):
-        pass
         self.sounds = {}
-        #self.sounds = {'Use': SoundWrapper(f'res/sounds/objects/{self.name}/use.mp3')}
 
     def icons_init(self, icons_path: str):
         self.icon = ImageWrapper('res/images/icons/' + icons_path + self.name + '.png')
-
-

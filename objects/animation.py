@@ -1,5 +1,7 @@
-import pygame
 import os
+
+import pygame
+
 from direction import *
 
 
@@ -17,12 +19,12 @@ class Animation:
                  path: str,
                  name: str,
                  directional: bool = True,
-                 interruptible: bool = True,
+                 interruptable: bool = True,
                  speed: float = 1,
                  scale: float = 1):
         self.path = path + name
         self.name = name
-        self.interruptable = interruptible
+        self.interruptable = interruptable
         self.directional = directional
         self.speed = speed
         self.scale = scale
@@ -40,9 +42,9 @@ class Animation:
         else:
             self.images = {Direction.STAND: self.__load_images('')}
 
-    def __load_images(self, dir: str):
+    def __load_images(self, directory: str):
         images = []
-        dir_path = self.path + '/' + dir
+        dir_path = self.path + '/' + directory
         for _, __, img_files in os.walk(dir_path):
             for img in img_files:
                 full_path = dir_path + img
@@ -59,7 +61,7 @@ class Animation:
             self.finished = True
         return self.images.get(direction)[int(self.frame)]
 
-    def update(self, direction: Direction):
+    def update(self):
         self.frame += self.speed
 
     def __getstate__(self):

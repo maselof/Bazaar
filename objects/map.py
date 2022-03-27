@@ -1,22 +1,25 @@
+import random
+
+import pygame
+from pygame import Vector2
+
 import game_cycle
 import game_logic
-from idrawable import *
+from idrawable import IDrawable
 from image_wrapper import ImageWrapper
-from pygame import Vector2
 from game_object import GameObject
 from entity import Entity
-import random
 from location import Location
 from chest import Chest
 from context import Context
 
 
 def to_frame_coordinates(point: Vector2) -> Vector2:
-    return Vector2(point.x // game_logic.map_frame_size.x, point.y // game_logic.map_frame_size.y)
+    return Vector2(point.x // game_logic.MAP_FRAME_SIZE.x, point.y // game_logic.MAP_FRAME_SIZE.y)
 
 
 def to_normal_coordinates(point: Vector2) -> Vector2:
-    return Vector2(point.x * game_logic.map_frame_size.x, point.y * game_logic.map_frame_size.y)
+    return Vector2(point.x * game_logic.MAP_FRAME_SIZE.x, point.y * game_logic.MAP_FRAME_SIZE.y)
 
 
 class MapFrame(IDrawable):
@@ -81,15 +84,15 @@ class Map(IDrawable):
         pos = Vector2(0, 0)
         start_frame = self.get_frame_by_pos(Vector2(0, 0))
         if start_frame:
-            pos = start_frame.get_normal_position() + Vector2(position.x * game_logic.map_frame_size.x,
-                                                              position.y * game_logic.map_frame_size.y)
+            pos = start_frame.get_normal_position() + Vector2(position.x * game_logic.MAP_FRAME_SIZE.x,
+                                                              position.y * game_logic.MAP_FRAME_SIZE.y)
         frame.set_normal_position(pos)
         self.all_frames.append(frame)
 
         location = game_logic.get_random_location()
         while True:
-            location_pos = pos + Vector2(random.randint(0, game_logic.map_frame_size.x),
-                                         random.randint(0, game_logic.map_frame_size.y))
+            location_pos = pos + Vector2(random.randint(0, game_logic.MAP_FRAME_SIZE.x),
+                                         random.randint(0, game_logic.MAP_FRAME_SIZE.y))
             location.set_position(location_pos)
             for go in location.objects:
                 if self.get_collided_all_objects(go, [go.collision_rect]):
@@ -101,8 +104,8 @@ class Map(IDrawable):
         entities = location.spawn_entities()
         for entity in entities:
             while True:
-                pos = Vector2(random.randint(0, location.size.x) + location.position.x,
-                              random.randint(0, location.size.y) + location.position.y)
+                pos = Vector2(random.randint(0, int(location.size.x)) + location.position.x,
+                              random.randint(0, int(location.size.y)) + location.position.y)
                 entity.set_position(pos)
                 if not self.get_collided_all_objects(entity, [entity.collision_rect]):
                     break
@@ -127,14 +130,14 @@ class Map(IDrawable):
         new_frame_offset = Vector2(0, 0)
         central_frame_position = self.central_frame.image.get_position()
 
-        if central_frame_position.x >= game_logic.g_screen_center.x:
+        if central_frame_position.x >= game_logic.SCREEN_CENTER.x:
             new_frame_offset.x = -1
-        elif central_frame_position.x + game_logic.map_frame_size.x < game_logic.g_screen_center.x:
+        elif central_frame_position.x + game_logic.MAP_FRAME_SIZE.x < game_logic.SCREEN_CENTER.x:
             new_frame_offset.x = 1
 
-        if central_frame_position.y >= game_logic.g_screen_center.y:
+        if central_frame_position.y >= game_logic.SCREEN_CENTER.y:
             new_frame_offset.y = -1
-        elif central_frame_position.y + game_logic.map_frame_size.y < game_logic.g_screen_center.y:
+        elif central_frame_position.y + game_logic.MAP_FRAME_SIZE.y < game_logic.SCREEN_CENTER.y:
             new_frame_offset.y = 1
 
         if new_frame_offset != Vector2(0, 0):
@@ -152,12 +155,12 @@ class Map(IDrawable):
         for frame in self.visible_frames:
             for go in frame.game_objects:
                 offset = Vector2(0, 0)
-                if go.get_center().x >= frame.get_normal_position().x + game_logic.map_frame_size.x:
+                if go.get_center().x >= frame.get_normal_position().x + game_logic.MAP_FRAME_SIZE.x:
                     offset.x = 1
                 elif go.get_center().x < frame.get_normal_position().x:
                     offset.x = -1
 
-                if go.get_center().y >= frame.get_normal_position().y + game_logic.map_frame_size.y:
+                if go.get_center().y >= frame.get_normal_position().y + game_logic.MAP_FRAME_SIZE.y:
                     offset.y = 1
                 elif go.get_center().y < frame.get_normal_position().y:
                     offset.y = -1
@@ -178,7 +181,8 @@ class Map(IDrawable):
             self.visible_game_objects.extend(frame.game_objects)
 
     def add_game_object(self, game_object: GameObject):
-        frame_pos = to_frame_coordinates(game_object.get_center()- self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
+        frame_pos = to_frame_coordinates((game_object.get_center() -
+                                          self.get_frame_by_pos(Vector2(0, 0)).get_normal_position()))
         if not self.get_frame_by_pos(frame_pos):
             self.generate_frame(frame_pos)
 
@@ -187,7 +191,8 @@ class Map(IDrawable):
         self.update_visible_objects()
 
     def remove_game_object(self, game_object: GameObject):
-        frame_pos = to_frame_coordinates(game_object.get_center() - self.get_frame_by_pos(Vector2(0, 0)).get_normal_position())
+        frame_pos = to_frame_coordinates((game_object.get_center() -
+                                          self.get_frame_by_pos(Vector2(0, 0)).get_normal_position()))
         self.get_frame_by_pos(frame_pos).game_objects.remove(game_object)
         self.all_game_objects.remove(game_object)
         self.update_visible_objects()
@@ -236,8 +241,8 @@ class Map(IDrawable):
 
     def check_collisions(self, game_object: GameObject, vector: Vector2) -> Vector2:
         dir_vector = vector
-        offset = Vector2(game_logic.collision_offset * (1 if dir_vector.x > 0 else -1 if dir_vector.x < 0 else 0),
-                         game_logic.collision_offset * (1 if dir_vector.y > 0 else -1 if dir_vector.y < 0 else 0))
+        offset = Vector2(game_logic.COLLISION_OFFSET * (1 if dir_vector.x > 0 else -1 if dir_vector.x < 0 else 0),
+                         game_logic.COLLISION_OFFSET * (1 if dir_vector.y > 0 else -1 if dir_vector.y < 0 else 0))
         collision_rect = game_object.collision_rect.copy()
         for go in self.visible_game_objects:
             if go == game_object:
@@ -293,9 +298,9 @@ class Map(IDrawable):
             if go == self.hero:
                 continue
             distance = game_cycle.game_data.game_map.get_distance(go, self.hero)
-            if distance >= game_logic.hero_sounds_range:
+            if distance >= game_logic.HERO_SOUNDS_RANGE:
                 continue
-            k = 1 - distance / game_logic.hero_sounds_range
+            k = 1 - distance / game_logic.HERO_SOUNDS_RANGE
             go.scale_sounds(k)
 
     def update(self):

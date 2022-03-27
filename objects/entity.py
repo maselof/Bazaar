@@ -1,11 +1,21 @@
+import random
+
+import pygame
+from pygame import Vector2
+
 import game_logic
-from pygame.math import Vector2
-from item import *
-from weapon import *
 import game_cycle
+from weapon import Weapon
 from inventory import GameContainer
 from inventory import ILootable
 from spectrum import Spectrum
+from game_object import GameObject
+from effect import Effect
+from direction import Direction
+from direction import is_horizontal
+from action import Action
+from animation import Animation
+from sound_wrapper import SoundWrapper
 
 
 class AI:
@@ -60,7 +70,8 @@ class Stats:
     dps: float
 
     def __init__(self,
-                 max_hp: int = 100, max_stamina: int = 100, max_mana: int = 100, max_exp: int = 100, exp: int = 0, lvl: int = 0):
+                 max_hp: int = 100, max_stamina: int = 100, max_mana: int = 100,
+                 max_exp: int = 100, exp: int = 0, lvl: int = 0):
         self.vitality = 10
         self.max_hp = max_hp
         self.hp = self.max_hp
@@ -122,8 +133,6 @@ class Entity(GameObject, ILootable):
         self.stats = stats
         self.is_dead = False
 
-
-
         self.attack_rects = []
         self.c_attack_rects = 5
 
@@ -133,7 +142,7 @@ class Entity(GameObject, ILootable):
         self.enable_random_actions = True
         self.ai = AI()
         self.ai.is_enemy = True
-        self.ai.agro_radius = game_logic.enemy_agro_radius
+        self.ai.agro_radius = game_logic.ENEMY_AGRO_RADIUS
 
         self.spectra = {'get_damage': Spectrum(Vector2(self.collision_rect.size),
                                                Vector2(self.collision_rect.x, self.collision_rect.y),
@@ -147,8 +156,10 @@ class Entity(GameObject, ILootable):
     def animations_init(self):
         path = 'res/animations/entities/' + self.animations_path + self.name + '/'
         self.actions = {'idle': Action(self.action_idle, Animation(path, 'idle', True)),
-                        'walking': Action(self.action_walking, Animation(path, 'walking', True, True, game_logic.g_entity_walking_anim_speed)),
-                        'attacking': Action(self.action_attacking, Animation(path, 'attacking', True, False, game_logic.g_entity_attacking_anim_speed))}
+                        'walking': Action(self.action_walking, Animation(path, 'walking', True, True,
+                                                                         game_logic.ENTITY_WALKING_ANIM_SPEED)),
+                        'attacking': Action(self.action_attacking, Animation(path, 'attacking', True, False,
+                                                                             game_logic.ENTITY_ATTACKING_ANIM_SPEED))}
         self.current_action = self.actions['idle']
 
     def sounds_init(self):
@@ -195,14 +206,16 @@ class Entity(GameObject, ILootable):
             if is_horizontal(self.direction):
                 w = height
                 h = width
-                pos_x = self.collision_rect.centerx + self.direction.value.x * w * (i + 1 * (self.direction == Direction.LEFT))
+                pos_x = self.collision_rect.centerx + self.direction.value.x * w * (i + 1 *
+                                                                                    (self.direction == Direction.LEFT))
                 pos_y = self.collision_rect.centery - h // 2
                 self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
             else:
                 w = width
                 h = height
                 pos_x = self.collision_rect.centerx - w // 2
-                pos_y = self.collision_rect.centery + self.direction.value.y * h * (i + 1 * (self.direction == Direction.UP))
+                pos_y = self.collision_rect.centery + self.direction.value.y * h * (i + 1 *
+                                                                                    (self.direction == Direction.UP))
                 self.attack_rects.append(pygame.Rect(pos_x, pos_y, w, h))
 
     def action_attacking(self, args: [object]):
@@ -249,11 +262,16 @@ class Entity(GameObject, ILootable):
             self.ai.finished = False
 
             if self.ai.movement_area:
-                self.ai.movement_point = Vector2(random.randint(int(self.ai.movement_area[0].x), int(self.ai.movement_area[1].x)),
-                                                 random.randint(int(self.ai.movement_area[0].y), int(self.ai.movement_area[1].y)))
+                self.ai.movement_point = Vector2(random.randint(int(self.ai.movement_area[0].x),
+                                                                int(self.ai.movement_area[1].x)),
+                                                 random.randint(int(self.ai.movement_area[0].y),
+                                                                int(self.ai.movement_area[1].y)))
             else:
-                self.ai.movement_point = Vector2(random.randint(-1 * game_logic.entity_movement_area_size.x // 2, 1 * game_logic.entity_movement_area_size.x // 2),
-                                                 random.randint(-1 * game_logic.entity_movement_area_size.y // 2, 1 * game_logic.entity_movement_area_size.y // 2)) + self.get_position()
+                self.ai.movement_point = (Vector2(random.randint(-1 * game_logic.ENTITY_MOVEMENT_AREA_SIZE.x // 2,
+                                                                 1 * game_logic.ENTITY_MOVEMENT_AREA_SIZE.x // 2),
+                                                  random.randint(-1 * game_logic.ENTITY_MOVEMENT_AREA_SIZE.y // 2,
+                                                                 1 * game_logic.ENTITY_MOVEMENT_AREA_SIZE.y // 2))
+                                          + self.get_position())
 
             self.ai.duration = random.randint(60, 300)
             self.ai.delay = random.randint(60, 300)
@@ -311,7 +329,7 @@ class Entity(GameObject, ILootable):
         new_stats.damage = self.weapon.damage * stats.strength / 10
         new_stats.attack_speed = stats.dexterity / 10 * self.weapon.attack_speed_modifier
         new_stats.dps = round(new_stats.damage * new_stats.attack_speed, 1)
-        new_stats.movement_speed = int(stats.dexterity / 10 * game_logic.hero_base_speed)
+        new_stats.movement_speed = int(stats.dexterity / 10 * game_logic.HERO_BASE_SPEED)
         new_stats.hp = stats.hp
         new_stats.stamina = stats.stamina
         new_stats.mana = stats.mana
@@ -328,8 +346,10 @@ class Entity(GameObject, ILootable):
 
     def update_stats(self):
         self.stats = self.get_updated_stats(self.stats)
-        self.actions.get('walking').animation.speed = game_logic.g_entity_walking_anim_speed * self.stats.movement_speed / game_logic.hero_base_speed
-        self.actions.get('attacking').animation.speed = game_logic.g_entity_attacking_anim_speed * self.stats.attack_speed
+        self.actions.get('walking').animation.speed = (game_logic.ENTITY_WALKING_ANIM_SPEED *
+                                                       self.stats.movement_speed / game_logic.HERO_BASE_SPEED)
+        self.actions.get('attacking').animation.speed = (game_logic.ENTITY_ATTACKING_ANIM_SPEED *
+                                                         self.stats.attack_speed)
 
     def refresh(self):
         self.stats.hp = self.stats.max_hp
@@ -362,9 +382,3 @@ class Entity(GameObject, ILootable):
 
         if self.current_spectrum and not self.current_spectrum.finished:
             self.current_spectrum.draw(screen)
-
-        # pygame.draw.circle(screen, (0, 255, 0), self.collision_rect.center, self.ai.agro_radius)
-
-        # if self.ai.movement_area:
-        #     size = self.ai.movement_area[1] - self.ai.movement_area[0]
-        #     pygame.draw.rect(screen, pygame.Color(0, 255, 0), Rect(self.ai.movement_area[0].x, self.ai.movement_area[0].y, size.x, size.y))

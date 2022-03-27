@@ -1,4 +1,7 @@
-from hero import *
+from pygame import Vector2
+
+from hero import Hero
+from entity import Entity
 
 
 class Camera:
@@ -27,4 +30,3 @@ class Camera:
                     if go.ai.movement_point:
                         go.ai.movement_point.x += back_vector.x
                         go.ai.movement_point.y += back_vector.y
-

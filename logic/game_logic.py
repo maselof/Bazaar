@@ -1,136 +1,138 @@
+import random
+
 import pygame.display
+from pygame import Vector2
 
 from location import Location
-from entity import *
+from entity import Entity
+from entity import Stats
 from chest import Chest
 from trader import Trader
+from effect import Effect
+from weapon import Weapon
+from item import Item
+from game_object import GameObject
 
 
 # general
-g_frames_count = 2
-g_fps = 60
-
-exp_gain = 100
-
+FPS = 60
+LVL_EXP_STEP = 100
+COLLISION_OFFSET = 5
 
 # screen
-g_screen_width = 1920
-g_screen_height = 1080
-g_screen_center = Vector2(g_screen_width, g_screen_height) // 2
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
+SCREEN_CENTER = Vector2(SCREEN_WIDTH, SCREEN_HEIGHT) // 2
 
 # menu
-menu_width = 400
-menu_buttons_offset = 20
-menu_buttons_text_size = 30
-menu_active_button_color = (255, 255, 255)
-menu_inactive_button_color = (232, 180, 0)
-menu_first_layer_color = (152, 94, 63)
-menu_second_layer_color = (185, 122, 87)
-menu_layers_offset = 10
+MENU_WIDTH = 400
+MENU_BUTTONS_OFFSET = 20
+MENU_BUTTONS_TEXT_SIZE = 30
+MENU_ACTIVE_BUTTON_COLOR = (255, 255, 255)
+MENU_INACTIVE_BUTTON_COLOR = (232, 180, 0)
+MENU_FIRST_LAYER_COLOR = (152, 94, 63)
+MENU_SECOND_LAYER_COLOR = (185, 122, 87)
+MENU_LAYERS_OFFSET = 10
 
 # death message
-dm_size = Vector2(400, 100)
+DM_SIZE = Vector2(400, 100)
 
 # hero
-g_hero_width = 30
-g_hero_height = 70
-hero_take_radius = 85
-hero_base_speed = 5
-hero_sounds_range = 500
+HERO_WIDTH = 30
+HERO_HEIGHT = 70
+HERO_INTERACT_RADIUS = 85
+HERO_BASE_SPEED = 5
+HERO_SOUNDS_RANGE = 500
 
 # entities
-g_entity_walking_anim_speed = 0.2
-g_entity_attacking_anim_speed = 0.2
-enemy_agro_radius = 300
-entity_collision_offset = Vector2(60, 40)
-entity_movement_area_size = Vector2(500, 500)
+ENTITY_WALKING_ANIM_SPEED = 0.2
+ENTITY_ATTACKING_ANIM_SPEED = 0.2
+ENEMY_AGRO_RADIUS = 300
+ENTITY_COLLISION_OFFSET = Vector2(60, 40)
+ENTITY_MOVEMENT_AREA_SIZE = Vector2(500, 500)
 
 # skills panel
-sp_width = 400
-sp_first_layer_color = (152, 94, 63)
-sp_second_layer_color = (185, 122, 87)
-sp_layers_offset = 10
-sp_text_size = 20
-sp_text_color = (255, 255, 255)
-sp_border_size = 2
-sp_border_color = (255, 255, 255)
-sp_text_offset = 5
-sp_arrow_offset = Vector2(2, 3)
-
-# other
-potion_hp = 20
-collision_offset = 5
+SP_WIDTH = 400
+SP_FIRST_LAYER_COLOR = (152, 94, 63)
+SP_SECOND_LAYER_COLOR = (185, 122, 87)
+SP_LAYERS_OFFSET = 10
+SP_TEXT_SIZE = 20
+SP_TEXT_COLOR = (255, 255, 255)
+SP_BORDER_SIZE = 2
+SP_BORDER_COLOR = (255, 255, 255)
+SP_TEXT_OFFSET = 5
+SP_ARROW_OFFSET = Vector2(2, 3)
 
 # Inventory
-inventory_columns_count = 5
-inventory_top_offset = 30
-inventory_left_cell_offset = 5
-inventory_items_offset = 11
-inventory_min_raws_count = 5
-inventory_text_size = 16
-inventory_background_color = (129, 81, 54)
+INVENTORY_COLUMNS_COUNT = 5
+INVENTORY_TOP_OFFSET = 30
+INVENTORY_LEFT_CELL_OFFSET = 5
+INVENTORY_ITEMS_OFFSET = 11
+INVENTORY_MIN_RAWS_COUNT = 5
+INVENTORY_TEXT_SIZE = 16
+INVENTORY_BACKGROUND_COLOR = (129, 81, 54)
 
 # Bottom panel
-panel_items_count = 10
-panel_bottom_offset = 30
-panel_items_offset = 11
-panel_items_size = 56
-panel_number_color = (232, 180, 0)
-panel_count_color = (255, 255, 255)
-panel_text_size = 16
-panel_text_offset = 2
+PANEL_ITEMS_COUNT = 10
+PANEL_BOTTOM_OFFSET = 30
+PANEL_ITEMS_OFFSET = 11
+PANEL_ITEMS_SIZE = 56
+PANEL_NUMBER_COLOR = (232, 180, 0)
+PANEL_COUNT_COLOR = (255, 255, 255)
+PANEL_TEXT_SIZE = 16
+PANEL_TEXT_OFFSET = 2
 
 # Dialog window
-dw_first_layer_color = (152, 94, 63)
-dw_second_layer_color = (185, 122, 87)
-dw_text_size = 20
-dw_text_color = (255, 255, 255)
-dw_layers_offset = 10
-dw_text_offset = Vector2(30, 10)
-dw_bottom_offset = 200
+DW_FIRST_LAYER_COLOR = (152, 94, 63)
+DW_SECOND_LAYER_COLOR = (185, 122, 87)
+DW_TEXT_SIZE = 20
+DW_TEXT_COLOR = (255, 255, 255)
+DW_LAYERS_OFFSET = 10
+DW_TEXT_OFFSET = Vector2(30, 10)
+DW_BOTTOM_OFFSET = 200
 
 # Description window
-dscw_size = Vector2(300, 300)
-dscw_name_text_size = 20
-dscw_frame_icon_offset = 5
-dscw_description_text_size = 15
-dscw_description_offset = 5
-dscw_stats_text_size = 20
-dscw_cost_text_color = (232, 180, 0)
+DSCW_SIZE = Vector2(300, 300)
+DSCW_NAME_TEXT_SIZE = 20
+DSCW_FRAME_ICON_OFFSET = 5
+DSCW_DESCRIPTION_TEXT_SIZE = 15
+DSCW_DESCRIPTION_OFFSET = 5
+DSCW_STATS_TEXT_SIZE = 20
+DSCW_COST_TEXT_COLOR = (232, 180, 0)
 
 # message log
-ml_text_size = 20
-ml_text_color = (255, 255, 255)
-ml_duration = 300
-ml_left_offset = 30
+ML_TEXT_SIZE = 20
+ML_TEXT_COLOR = (255, 255, 255)
+ML_DURATION = 300
+ML_LEFT_OFFSET = 30
 
 # health bar
-hb_lvl_text_size = 15
+HB_LVL_TEXT_SIZE = 15
 
 # interface priorities
-hp_bar_priority = 1
-inventory_priority = 2
-dialog_window_priority = 2
-hero_bars_priority = 2
-message_log_priority = 2
-skills_panel_priority = 3
+HP_BAR_PRIORITY = 1
+INVENTORY_PRIORITY = 2
+DIALOG_WINDOW_PRIORITY = 2
+HERO_BARS_PRIORITY = 2
+MESSAGE_LOG_PRIORITY = 2
+SKILLS_PANEL_PRIORITY = 3
 
 # hero bars
-hb_right_offset = 100
-hb_bottom_offset = 50
-hb_bar_size = Vector2(250, 15)
-hb_health_color = (255, 0, 0)
-hb_stamina_color = (0, 255, 0)
-hb_mana_color = (0, 0, 255)
-hb_frame_color = (0, 0, 0)
-hb_bars_offset = 5
-hb_text_size = 15
-hb_text_color = (232, 180, 0)
-hb_exp_bar_color = (255, 255, 255)
-hb_exp_text_size = 20
+HB_RIGHT_OFFSET = 100
+HB_BOTTOM_OFFSET = 50
+HB_BAR_SIZE = Vector2(250, 15)
+HB_HEALTH_COLOR = (255, 0, 0)
+HB_STAMINA_COLOR = (0, 255, 0)
+HB_MANA_COLOR = (0, 0, 255)
+HB_FRAME_COLOR = (0, 0, 0)
+HB_BARS_OFFSET = 5
+HB_TEXT_SIZE = 15
+HB_TEXT_COLOR = (232, 180, 0)
+HB_EXP_BAR_COLOR = (255, 255, 255)
+HB_EXP_TEXT_SIZE = 20
 
 # map
-map_frame_size = Vector2(1680, 1050)
+MAP_FRAME_SIZE = Vector2(1680, 1050)
 
 # keys
 
@@ -140,30 +142,30 @@ NUMBER_KEYS = {pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3, pygam
 # effect funcs:
 
 pygame.init()
-pygame.display.set_mode([g_screen_width, g_screen_height])
+pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
 
-def healing(entity: object, value: float):
+def healing(entity, value: float):
     entity.stats.hp = min(entity.stats.hp + int(value), entity.stats.max_hp)
 
 
-def bleeding(entity: object, value: float):
+def bleeding(entity, value: float):
     entity.stats.hp = max(entity.stats.hp - int(value), 0)
 
 
-def fatigue(entity: object, value: float):
+def fatigue(entity, value: float):
     entity.stats.stamina = max(entity.stats.stamina - int(value), 0)
 
 
-def breathing(entity: object, value: float):
+def breathing(entity, value: float):
     entity.stats.stamina = min(entity.stats.stamina + int(value), entity.stats.max_stamina)
 
 
-def mana_recovery(entity: object, value: float):
+def mana_recovery(entity, value: float):
     entity.stats.mana = min(entity.stats.mana + int(value), entity.stats.max_mana)
 
 
-def refreshing(entity: object, value: float):
+def refreshing(entity, value: float):
     entity.stats.hp = entity.stats.max_hp
     entity.stats.stamina = entity.stats.max_stamina
     entity.stats.mana = entity.stats.max_mana
@@ -184,6 +186,7 @@ def get_effect(id: str) -> Effect:
     effect = EFFECTS.get(id)
     return Effect(effect.name, effect.action_func, effect.duration, effect.delay, effect.value, effect.looped)
 
+
 # id: GameObject
 ITEMS = {'fists': Weapon('fists', 10, 1, 50, [], [], 0, '', 0)}
 
@@ -199,19 +202,19 @@ def init_items():
                                            'Weak stamina potion. Increase your sp on 50 points.', 50),
 
                   'endurance_potion_2': Item('endurance_potion_2', 'potions/', Vector2(0, 0), False, 1,
-                                           [get_effect('Mean Stamina Recovery')], 40,
-                                           'Mean stamina potion. Increase your sp on 100 points.', 50),
+                                             [get_effect('Mean Stamina Recovery')], 40,
+                                             'Mean stamina potion. Increase your sp on 100 points.', 50),
 
                   'mana_potion': Item('mana_potion', 'potions/', Vector2(0, 0), False, 1,
-                                           [get_effect('Weak Mana Recovery')], 20,
-                                           'Weak mana potion. Increase your mp on 50 points.', 50),
+                                      [get_effect('Weak Mana Recovery')], 20,
+                                      'Weak mana potion. Increase your mp on 50 points.', 50),
 
                   'mana_potion_2': Item('mana_potion_2', 'potions/', Vector2(0, 0), False, 1,
-                                             [get_effect('Mean Mana Recovery')], 40,
-                                             'Mean mana potion. Increase your mp on 100 points.', 50),
+                                        [get_effect('Mean Mana Recovery')], 40,
+                                        'Mean mana potion. Increase your mp on 100 points.', 50),
 
-                  'golden_potion': Item('golden_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Refresh')], 500,
-                                      'Golden potion. Recovery all stats.', 10),
+                  'golden_potion': Item('golden_potion', 'potions/', Vector2(0, 0), False, 1, [get_effect('Refresh')],
+                                        500, 'Golden potion. Recovery all stats.', 10),
 
                   'cudgel': Weapon('cudgel', 40, 0.7, 80, [], [], 100, 'The most common weapon among bandits.', 10),
                   'sword': Weapon('sword', 20, 1.5, 120, [], [], 250, 'Some description.', 10),
@@ -221,8 +224,10 @@ def init_items():
 def get_item(id: str):
     item = ITEMS.get(id)
     if isinstance(item, Weapon):
-        return Weapon(item.name, item.damage, item.attack_speed_modifier, item.attack_range, item.effects, item.attack_effects, item.cost, item.description, item.trading_count)
-    return Item(item.name, item.animations_path, item.size, item.directional, item.scaling, item.effects, item.cost, item.description, item.trading_count)
+        return Weapon(item.name, item.damage, item.attack_speed_modifier, item.attack_range, item.effects,
+                      item.attack_effects, item.cost, item.description, item.trading_count)
+    return Item(item.name, item.animations_path, item.size, item.directional, item.scaling,
+                item.effects, item.cost, item.description, item.trading_count)
 
 
 def get_weapons():
@@ -240,14 +245,15 @@ ENTITIES = {}
 def init_entities():
     skeleton_stats = Stats(max_hp=50, exp=50, lvl=0)
     bandit_stats = Stats(max_hp=100, exp=100, lvl=0)
-    ENTITIES.update({'skeleton': Entity('skeleton', '', Vector2(30, 70), entity_collision_offset, 1, skeleton_stats),
-                     'bandit': Entity('bandit', '', Vector2(30, 70), entity_collision_offset, 1, bandit_stats)})
+    ENTITIES.update({'skeleton': Entity('skeleton', '', Vector2(30, 70), ENTITY_COLLISION_OFFSET, 1, skeleton_stats),
+                     'bandit': Entity('bandit', '', Vector2(30, 70), ENTITY_COLLISION_OFFSET, 1, bandit_stats)})
 
 
 def get_entity(id: str):
     entity = ENTITIES.get(id)
     entity_stats = Stats(max_hp=entity.stats.max_hp, exp=entity.stats.exp, lvl=entity.stats.lvl)
-    return Entity(entity.name, entity.animations_path, entity.size, entity.collision_rect_offset, entity.scaling, entity_stats)
+    return Entity(entity.name, entity.animations_path, entity.size,
+                  entity.collision_rect_offset, entity.scaling, entity_stats)
 
 
 GAME_OBJECTS = {}
@@ -266,7 +272,7 @@ def fill_chest(chest: Chest, seed: int):
         if item.name != 'fists':
             chest.inventory.add_item(item)
     gold = random.randint(0, seed * 100)
-    chest.inventory.add_item(game_logic.get_item('coin'), gold)
+    chest.inventory.add_item(get_item('coin'), gold)
 
 
 def get_game_object(name: str) -> GameObject:
